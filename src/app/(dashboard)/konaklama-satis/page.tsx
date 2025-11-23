@@ -20,6 +20,7 @@ import {
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { robotoBase64 } from '@/lib/fonts/roboto';
 
 interface AccommodationSale {
   id: number;
@@ -228,8 +229,8 @@ export default function AccommodationSalesPage() {
       'Ödenen',
       'Kalan'
     ]);
-    headerRow.font = { 
-      bold: true, 
+    headerRow.font = {
+      bold: true,
       size: 11,
       name: 'Arial',
       color: { argb: 'FFFFFFFF' }
@@ -239,8 +240,8 @@ export default function AccommodationSalesPage() {
       pattern: 'solid',
       fgColor: { argb: 'FF4285F4' },
     };
-    headerRow.alignment = { 
-      horizontal: 'center', 
+    headerRow.alignment = {
+      horizontal: 'center',
       vertical: 'middle',
       wrapText: true
     };
@@ -347,6 +348,10 @@ export default function AccommodationSalesPage() {
       floatPrecision: 16
     });
 
+    // Font ekle
+    doc.addFileToVFS('Roboto-Regular.ttf', robotoBase64);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+
     // PDF metadata ve encoding ayarları
     doc.setProperties({
       title: 'Konaklama Satış Listesi',
@@ -357,18 +362,18 @@ export default function AccommodationSalesPage() {
     });
 
     // Türkçe karakter desteği için font ayarları
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('Roboto', 'normal');
 
     // Başlık
     doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Konaklama Satış Listesi', 14, 22, { encoding: 'UTF8' });
+    doc.setFont('Roboto', 'normal');
+    doc.text('Konaklama Satış Listesi', 14, 22);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('Roboto', 'normal');
     const createDate = `Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`;
     const totalRecords = `Toplam Kayıt: ${filteredSales.length}`;
-    doc.text(createDate, 14, 28, { encoding: 'UTF8' });
-    doc.text(totalRecords, 14, 33, { encoding: 'UTF8' });
+    doc.text(createDate, 14, 28);
+    doc.text(totalRecords, 14, 33);
 
     const tableData = filteredSales.map(sale => [
       sale.adiSoyadi || '-',
@@ -384,9 +389,11 @@ export default function AccommodationSalesPage() {
       head: [['Misafir', 'Otel', 'Alış', 'Satış', 'Kar', 'Kar %', 'Ödeme']],
       body: tableData,
       startY: 38,
-      styles: { 
+      styles: {
         fontSize: 10,
-        font: 'helvetica',
+
+
+        font: 'Roboto',
         fontStyle: 'normal',
         textColor: [0, 0, 0],
         cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
@@ -398,12 +405,13 @@ export default function AccommodationSalesPage() {
         lineColor: [180, 180, 180],
         minCellHeight: 8
       },
-      headStyles: { 
+      headStyles: {
         fillColor: [66, 139, 202],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 11,
-        font: 'helvetica',
+
+        font: 'Roboto',
         halign: 'center',
         valign: 'middle',
         cellPadding: { top: 5, right: 3, bottom: 5, left: 3 },
@@ -415,78 +423,7 @@ export default function AccommodationSalesPage() {
         fillColor: [250, 250, 250],
         textColor: [0, 0, 0]
       },
-      didParseCell: function (data: any) {
-        // Türkçe karakterleri korumak için text'i normalize etme
-        if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
-          if (Array.isArray(data.cell.text)) {
-            data.cell.text = data.cell.text.map((t: any) => {
-              if (t === null || t === undefined) return '';
-              return String(t);
-            });
-          } else {
-            data.cell.text = String(data.cell.text);
-          }
-        }
-      },
-      willDrawCell: function (data: any) {
-        // autoTable'ın kendi text rendering'ini devre dışı bırak
-        if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
-          data.cell._customText = Array.isArray(data.cell.text) 
-            ? data.cell.text.join(' ')
-            : String(data.cell.text);
-          data.cell.text = '';
-        }
-      },
-      didDrawCell: function (data: any) {
-        // Türkçe karakterleri doğru render etmek için manuel text rendering
-        if (data.cell && data.cell._customText !== undefined) {
-          const text = data.cell._customText;
-          
-          if (text && text.length > 0) {
-            const fontSize = data.cell.styles?.fontSize || (data.section === 'head' ? 11 : 10);
-            const textColor = data.cell.styles?.textColor || (data.section === 'head' ? [255, 255, 255] : [0, 0, 0]);
-            const fontStyle = data.cell.styles?.fontStyle || (data.section === 'head' ? 'bold' : 'normal');
-            const halign = data.cell.styles?.halign || 'left';
-            
-            doc.setFontSize(fontSize);
-            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-            doc.setFont('helvetica', fontStyle);
-            
-            const paddingLeft = data.cell.padding?.left || 3;
-            const paddingTop = data.cell.padding?.top || 4;
-            const cellWidth = data.cell.width || 30;
-            
-            let x = data.cell.x + paddingLeft;
-            const y = data.cell.y + paddingTop + (fontSize * 0.35);
-            
-            if (halign === 'center') {
-              const textWidth = doc.getTextWidth(text);
-              x = data.cell.x + (cellWidth / 2) - (textWidth / 2);
-            } else if (halign === 'right') {
-              const textWidth = doc.getTextWidth(text);
-              x = data.cell.x + cellWidth - paddingLeft - textWidth;
-            }
-            
-            try {
-              const maxWidth = cellWidth - paddingLeft - (data.cell.padding?.right || 3);
-              if (doc.getTextWidth(text) <= maxWidth) {
-                doc.text(text, x, y);
-              } else {
-                let truncatedText = text;
-                while (doc.getTextWidth(truncatedText) > maxWidth && truncatedText.length > 0) {
-                  truncatedText = truncatedText.slice(0, -1);
-                }
-                if (truncatedText.length < text.length) {
-                  truncatedText += '...';
-                }
-                doc.text(truncatedText, x, y);
-              }
-            } catch (e) {
-              console.warn('Text render hatası:', e);
-            }
-          }
-        }
-      },
+
       columnStyles: {
         0: { halign: 'left', cellWidth: 35, fontSize: 10 },
         1: { halign: 'left', cellWidth: 35, fontSize: 10 },
@@ -508,13 +445,13 @@ export default function AccommodationSalesPage() {
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('Roboto', 'normal');
       const pageText = `Sayfa ${i} / ${pageCount}`;
       doc.text(
         pageText,
         doc.internal.pageSize.getWidth() / 2,
         doc.internal.pageSize.getHeight() - 5,
-        { align: 'center', encoding: 'UTF8' }
+        { align: 'center' }
       );
     }
 
@@ -682,75 +619,75 @@ export default function AccommodationSalesPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSales.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center">
-                      <AlertCircle className="w-12 h-12 text-gray-400 mb-3" />
-                      <p className="text-gray-500">Henüz satış kaydı yok</p>
-                      <p className="text-sm text-gray-400 mt-1">Konaklama Alış sayfasından kayıt aktarabilirsiniz</p>
-                    </div>
-                  </td>
-                </tr>
-                ) : (
-                filteredSales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedSaleIds.includes(sale.id)}
-                        onChange={() => handleSelectSale(sale.id)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{sale.adiSoyadi}</div>
-                        <div className="text-sm text-gray-500">{sale.unvani}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {sale.otelAdi || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {sale.girisTarihi} - {sale.cikisTarihi}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ₺{sale.toplamAlisFiyati.toLocaleString('tr-TR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                      ₺{sale.toplamSatisFiyati.toLocaleString('tr-TR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-purple-600">
-                        ₺{sale.kar.toLocaleString('tr-TR')}
-                      </div>
-                      <div className="text-xs text-gray-500">%{sale.karOrani.toFixed(1)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {sale.musteriAdi || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getPaymentStatusBadge(sale.odemeDurumu)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEdit(sale)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(sale.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  <tr>
+                    <td colSpan={10} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center">
+                        <AlertCircle className="w-12 h-12 text-gray-400 mb-3" />
+                        <p className="text-gray-500">Henüz satış kaydı yok</p>
+                        <p className="text-sm text-gray-400 mt-1">Konaklama Alış sayfasından kayıt aktarabilirsiniz</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                ) : (
+                  filteredSales.map((sale) => (
+                    <tr key={sale.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedSaleIds.includes(sale.id)}
+                          onChange={() => handleSelectSale(sale.id)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{sale.adiSoyadi}</div>
+                          <div className="text-sm text-gray-500">{sale.unvani}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {sale.otelAdi || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {sale.girisTarihi} - {sale.cikisTarihi}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ₺{sale.toplamAlisFiyati.toLocaleString('tr-TR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        ₺{sale.toplamSatisFiyati.toLocaleString('tr-TR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-purple-600">
+                          ₺{sale.kar.toLocaleString('tr-TR')}
+                        </div>
+                        <div className="text-xs text-gray-500">%{sale.karOrani.toFixed(1)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {sale.musteriAdi || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getPaymentStatusBadge(sale.odemeDurumu)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(sale)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(sale.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -9,6 +9,7 @@ import Pagination from "./Pagination";
 import PaymentModal from "@/components/payment/PaymentModal";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { robotoBase64 } from '@/lib/fonts/roboto';
 
 export interface AccommodationRecord {
   id: number;
@@ -442,6 +443,7 @@ export default function AccommodationTableSection({
       gecelikUcret: 0,
       toplamUcret: 0,
       otelAdi: '',
+      kurumCari: '',
       numberOfNights: 0,
     });
     setShowAddModal(true);
@@ -470,7 +472,7 @@ export default function AccommodationTableSection({
       const nights = calculateNumberOfNights(formData.girisTarihi, formData.cikisTarihi);
       const gecelikUcret = formData.gecelikUcret || 0;
       const toplamUcret = nights > 0 && gecelikUcret > 0 ? nights * gecelikUcret : 0;
-      
+
       setFormData(prev => {
         // Sadece değerler değiştiyse güncelle
         if (prev.numberOfNights !== nights || prev.toplamUcret !== toplamUcret) {
@@ -556,7 +558,7 @@ export default function AccommodationTableSection({
         window.location.reload();
       } else {
         const errorData = await response.json();
-        
+
         // Ödeme gerekli hatası
         if (response.status === 402 && errorData.error === 'PAYMENT_REQUIRED') {
           setPaymentData({
@@ -640,7 +642,7 @@ export default function AccommodationTableSection({
           const selectedHotelNames = hotels
             .filter(h => advancedFilters.selectedHotels.includes(h.id))
             .map(h => h.adi.toLowerCase());
-          
+
           const recordHotelName = (record.otelAdi || '').toLowerCase();
           if (!selectedHotelNames.includes(recordHotelName)) {
             return false;
@@ -670,7 +672,7 @@ export default function AccommodationTableSection({
           const today = new Date();
           const checkIn = new Date(record.girisTarihi);
           const checkOut = new Date(record.cikisTarihi);
-          
+
           if (advancedFilters.status === 'active') {
             if (!(checkIn <= today && checkOut >= today)) return false;
           } else if (advancedFilters.status === 'past') {
@@ -824,43 +826,43 @@ export default function AccommodationTableSection({
         };
 
         const headerIndices = {
-          adiSoyadi: getHeaderIndex('Adı Soyadı') >= 0 ? getHeaderIndex('Adı Soyadı') : 
-                     (getHeaderIndex('Ad Soyad') >= 0 ? getHeaderIndex('Ad Soyad') : 
-                     (getHeaderIndex('AdıSoyadı') >= 0 ? getHeaderIndex('AdıSoyadı') : 0)),
-          unvani: getHeaderIndex('Unvanı') >= 0 ? getHeaderIndex('Unvanı') : 
-                  (getHeaderIndex('Unvan') >= 0 ? getHeaderIndex('Unvan') : 1),
-          ulke: getHeaderIndex('Ülke') >= 0 ? getHeaderIndex('Ülke') : 
-                (getHeaderIndex('Ulke') >= 0 ? getHeaderIndex('Ulke') : 2),
-          sehir: getHeaderIndex('Şehir') >= 0 ? getHeaderIndex('Şehir') : 
-                 (getHeaderIndex('Sehir') >= 0 ? getHeaderIndex('Sehir') : 3),
-          girisTarihi: getHeaderIndex('Giriş Tarihi') >= 0 ? getHeaderIndex('Giriş Tarihi') : 
-                       (getHeaderIndex('Giris Tarihi') >= 0 ? getHeaderIndex('Giris Tarihi') : 
-                       (getHeaderIndex('GirişTarihi') >= 0 ? getHeaderIndex('GirişTarihi') : 4)),
-          cikisTarihi: getHeaderIndex('Çıkış Tarihi') >= 0 ? getHeaderIndex('Çıkış Tarihi') : 
-                       (getHeaderIndex('Cikis Tarihi') >= 0 ? getHeaderIndex('Cikis Tarihi') : 
-                       (getHeaderIndex('ÇıkışTarihi') >= 0 ? getHeaderIndex('ÇıkışTarihi') : 5)),
-          odaTipi: getHeaderIndex('Oda Tipi') >= 0 ? getHeaderIndex('Oda Tipi') : 
-                   (getHeaderIndex('OdaTipi') >= 0 ? getHeaderIndex('OdaTipi') : 6),
-          konaklamaTipi: getHeaderIndex('Konaklama Tipi') >= 0 ? getHeaderIndex('Konaklama Tipi') : 
-                        (getHeaderIndex('KonaklamaTipi') >= 0 ? getHeaderIndex('KonaklamaTipi') : 7),
-          gecelikUcret: getHeaderIndex('Gecelik Ücret') >= 0 ? getHeaderIndex('Gecelik Ücret') : 
-                        (getHeaderIndex('GecelikUcret') >= 0 ? getHeaderIndex('GecelikUcret') : 8),
-          otelAdi: getHeaderIndex('Otel Adı') >= 0 ? getHeaderIndex('Otel Adı') : 
-                   (getHeaderIndex('OtelAdi') >= 0 ? getHeaderIndex('OtelAdi') : 10),
-          kurumCari: getHeaderIndex('Cari') >= 0 ? getHeaderIndex('Cari') : 
-                     (getHeaderIndex('Kurum / Cari') >= 0 ? getHeaderIndex('Kurum / Cari') : 
-                     (getHeaderIndex('Kurum Cari') >= 0 ? getHeaderIndex('Kurum Cari') : 
-                     (getHeaderIndex('KurumCari') >= 0 ? getHeaderIndex('KurumCari') : 11)))
+          adiSoyadi: getHeaderIndex('Adı Soyadı') >= 0 ? getHeaderIndex('Adı Soyadı') :
+            (getHeaderIndex('Ad Soyad') >= 0 ? getHeaderIndex('Ad Soyad') :
+              (getHeaderIndex('AdıSoyadı') >= 0 ? getHeaderIndex('AdıSoyadı') : 0)),
+          unvani: getHeaderIndex('Unvanı') >= 0 ? getHeaderIndex('Unvanı') :
+            (getHeaderIndex('Unvan') >= 0 ? getHeaderIndex('Unvan') : 1),
+          ulke: getHeaderIndex('Ülke') >= 0 ? getHeaderIndex('Ülke') :
+            (getHeaderIndex('Ulke') >= 0 ? getHeaderIndex('Ulke') : 2),
+          sehir: getHeaderIndex('Şehir') >= 0 ? getHeaderIndex('Şehir') :
+            (getHeaderIndex('Sehir') >= 0 ? getHeaderIndex('Sehir') : 3),
+          girisTarihi: getHeaderIndex('Giriş Tarihi') >= 0 ? getHeaderIndex('Giriş Tarihi') :
+            (getHeaderIndex('Giris Tarihi') >= 0 ? getHeaderIndex('Giris Tarihi') :
+              (getHeaderIndex('GirişTarihi') >= 0 ? getHeaderIndex('GirişTarihi') : 4)),
+          cikisTarihi: getHeaderIndex('Çıkış Tarihi') >= 0 ? getHeaderIndex('Çıkış Tarihi') :
+            (getHeaderIndex('Cikis Tarihi') >= 0 ? getHeaderIndex('Cikis Tarihi') :
+              (getHeaderIndex('ÇıkışTarihi') >= 0 ? getHeaderIndex('ÇıkışTarihi') : 5)),
+          odaTipi: getHeaderIndex('Oda Tipi') >= 0 ? getHeaderIndex('Oda Tipi') :
+            (getHeaderIndex('OdaTipi') >= 0 ? getHeaderIndex('OdaTipi') : 6),
+          konaklamaTipi: getHeaderIndex('Konaklama Tipi') >= 0 ? getHeaderIndex('Konaklama Tipi') :
+            (getHeaderIndex('KonaklamaTipi') >= 0 ? getHeaderIndex('KonaklamaTipi') : 7),
+          gecelikUcret: getHeaderIndex('Gecelik Ücret') >= 0 ? getHeaderIndex('Gecelik Ücret') :
+            (getHeaderIndex('GecelikUcret') >= 0 ? getHeaderIndex('GecelikUcret') : 8),
+          otelAdi: getHeaderIndex('Otel Adı') >= 0 ? getHeaderIndex('Otel Adı') :
+            (getHeaderIndex('OtelAdi') >= 0 ? getHeaderIndex('OtelAdi') : 10),
+          kurumCari: getHeaderIndex('Cari') >= 0 ? getHeaderIndex('Cari') :
+            (getHeaderIndex('Kurum / Cari') >= 0 ? getHeaderIndex('Kurum / Cari') :
+              (getHeaderIndex('Kurum Cari') >= 0 ? getHeaderIndex('Kurum Cari') :
+                (getHeaderIndex('KurumCari') >= 0 ? getHeaderIndex('KurumCari') : 11)))
         };
 
         const excelDateToISO = (value: any): string => {
           if (!value) return '';
-          
+
           // Eğer zaten ISO formatında ise (YYYY-MM-DD)
           if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
             return value;
           }
-          
+
           // Eğer tarih string formatında ise (DD/MM/YYYY veya DD.MM.YYYY)
           if (typeof value === 'string') {
             const dateStr = value.trim();
@@ -870,23 +872,23 @@ export default function AccommodationTableSection({
               const [, day, month, year] = dateMatch;
               return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
             }
-            
+
             // Tarih objesi olarak parse et
             const parsedDate = new Date(dateStr);
             if (!isNaN(parsedDate.getTime())) {
               return parsedDate.toISOString().split('T')[0];
             }
           }
-          
+
           // Excel tarih serisi numarasını JavaScript tarihine çevir
           try {
             const excelDate = typeof value === 'number' ? value : parseFloat(value);
             if (isNaN(excelDate)) return '';
-            
+
             // Excel'in başlangıç tarihi (1900-01-01) ile JavaScript'in başlangıç tarihi (1970-01-01) arasındaki fark
             const excelEpoch = new Date(1899, 11, 30); // Excel 1900-01-01 = 1, ama JavaScript'te 1899-12-30
             const jsDate = new Date(excelEpoch.getTime() + (excelDate - 1) * 24 * 60 * 60 * 1000);
-            
+
             // YYYY-MM-DD formatına çevir
             return jsDate.toISOString().split('T')[0];
           } catch (error) {
@@ -959,7 +961,7 @@ export default function AccommodationTableSection({
           window.location.reload();
         } else {
           const errorData = await res.json().catch(() => ({ error: 'Bilinmeyen hata' }));
-          
+
           // Ödeme gerekli hatası
           if (res.status === 402 && errorData.error === 'PAYMENT_REQUIRED') {
             setPaymentData({
@@ -1039,8 +1041,8 @@ export default function AccommodationTableSection({
     });
 
     const headerRow = worksheet.addRow(headers);
-    headerRow.font = { 
-      bold: true, 
+    headerRow.font = {
+      bold: true,
       size: 11,
       name: 'Arial',
       color: { argb: 'FFFFFFFF' }
@@ -1050,8 +1052,8 @@ export default function AccommodationTableSection({
       pattern: 'solid',
       fgColor: { argb: 'FF4285F4' },
     };
-    headerRow.alignment = { 
-      horizontal: 'center', 
+    headerRow.alignment = {
+      horizontal: 'center',
       vertical: 'middle',
       wrapText: true
     };
@@ -1165,6 +1167,10 @@ export default function AccommodationTableSection({
       floatPrecision: 16
     });
 
+    // Font ekle
+    doc.addFileToVFS('Roboto-Regular.ttf', robotoBase64);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+
     // PDF metadata ve encoding ayarları
     doc.setProperties({
       title: 'Konaklama Listesi',
@@ -1175,25 +1181,25 @@ export default function AccommodationTableSection({
     });
 
     // Türkçe karakter desteği için font ayarları
-    doc.setFont('helvetica', 'normal');
-    
+    doc.setFont('Roboto', 'normal');
+
     // Başlık - Türkçe karakterleri doğru render etmek için
     doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont('Roboto', 'normal');
     const title = "Konaklama Listesi";
-    doc.text(title, 14, 15, { encoding: 'UTF8' });
-    
+    doc.text(title, 14, 15);
+
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const createDate = `Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
+    doc.setFont('Roboto', 'normal');
+    const createDate = `Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
     })}`;
-    doc.text(createDate, 14, 22, { encoding: 'UTF8' });
-    
+    doc.text(createDate, 14, 22);
+
     const totalRecords = `Toplam Kayıt: ${displayRecords.length}`;
-    doc.text(totalRecords, 14, 27, { encoding: 'UTF8' });
+    doc.text(totalRecords, 14, 27);
 
     // Tablo başlıkları ve verileri
     const tableHeaders = selectedColumns.map(col => {
@@ -1204,16 +1210,16 @@ export default function AccommodationTableSection({
     const tableData = displayRecords.map(record => {
       return selectedColumns.map(column => {
         let value: any = record[column as keyof AccommodationRecord];
-        
+
         // Veri formatlama
         if (column === 'girisTarihi' || column === 'cikisTarihi') {
           value = formatDate(value as string);
         } else if (column === 'gecelikUcret' || column === 'toplamUcret') {
           // Para birimi formatı - TL kullanarak daha iyi uyumluluk
           if (typeof value === 'number') {
-            const formatted = value.toLocaleString('tr-TR', { 
-              minimumFractionDigits: 2, 
-              maximumFractionDigits: 2 
+            const formatted = value.toLocaleString('tr-TR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
             });
             value = `${formatted} TL`;
           } else {
@@ -1231,60 +1237,56 @@ export default function AccommodationTableSection({
           // String değerleri temizle
           value = String(value).trim();
         }
-        
+
         return value || '-';
       });
-    });
-
-    // Tablo genişliklerini ayarla
-    const columnWidths = selectedColumns.map(col => {
-      // Sütun tipine göre genişlik belirle
-      if (col === 'id') return 15;
-      if (col === 'adiSoyadi' || col === 'unvani') return 35;
-      if (col === 'girisTarihi' || col === 'cikisTarihi') return 25;
-      if (col === 'gecelikUcret' || col === 'toplamUcret') return 30;
-      if (col === 'otelAdi') return 40;
-      if (col === 'ulke' || col === 'sehir') return 25;
-      if (col === 'odaTipi' || col === 'konaklamaTipi') return 25;
-      if (col === 'numberOfNights') return 20;
-      return 30; // Varsayılan genişlik
     });
 
     autoTable(doc, {
       head: [tableHeaders],
       body: tableData,
-      startY: 32,
-      styles: { 
-        fontSize: 10, 
-        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
-        font: 'helvetica',
+      startY: 35,
+      styles: {
+        fontSize: 9, // Font boyutunu biraz küçült
+        cellPadding: { top: 2, right: 2, bottom: 2, left: 2 },
+        font: 'Roboto',
         fontStyle: 'normal',
-        textColor: [0, 0, 0],
+        textColor: [50, 50, 50], // Daha yumuşak siyah
         overflow: 'linebreak',
-        cellWidth: 'wrap',
+        cellWidth: 'auto', // Otomatik genişlik
         halign: 'left',
         valign: 'middle',
-        lineWidth: 0.2,
-        lineColor: [180, 180, 180],
-        minCellHeight: 8
+        lineWidth: 0.1,
+        lineColor: [230, 230, 230], // Daha ince ve açık renk çizgiler
       },
-      headStyles: { 
-        fillColor: [66, 139, 202],
+      headStyles: {
+        fillColor: [41, 128, 185], // Daha modern bir mavi
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 11,
-        font: 'helvetica',
+        fontSize: 10,
+        font: 'Roboto',
         halign: 'center',
         valign: 'middle',
-        cellPadding: { top: 5, right: 3, bottom: 5, left: 3 },
-        lineWidth: 0.2,
-        lineColor: [180, 180, 180],
-        minCellHeight: 10
+        cellPadding: 3,
+        lineWidth: 0,
       },
       alternateRowStyles: {
-        fillColor: [250, 250, 250],
-        textColor: [0, 0, 0]
+        fillColor: [248, 250, 252], // Çok açık mavi-gri
       },
+      columnStyles: selectedColumns.reduce((acc, col, index) => {
+        acc[index] = {
+          // Para birimi ve sayısal değerler sağa yaslı
+          halign: col === 'gecelikUcret' || col === 'toplamUcret' || col === 'numberOfNights' || col === 'id' ? 'right' :
+            col === 'girisTarihi' || col === 'cikisTarihi' ? 'center' : 'left',
+          // ID sütunu dar olsun
+          cellWidth: col === 'id' ? 10 : 'auto'
+        };
+        return acc;
+      }, {} as any),
+      margin: { top: 35, right: 10, bottom: 20, left: 10 },
+      tableWidth: 'auto', // Sayfaya sığdır
+      showHead: 'everyPage',
+      showFoot: 'lastPage', // Toplam satırı için footer göster
       didParseCell: function (data: any) {
         // Türkçe karakterleri korumak için text'i normalize etme
         if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
@@ -1303,7 +1305,7 @@ export default function AccommodationTableSection({
         // autoTable'ın kendi text rendering'ini devre dışı bırak
         if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
           // Text'i sakla ama autoTable'ın render etmesini engelle
-          data.cell._customText = Array.isArray(data.cell.text) 
+          data.cell._customText = Array.isArray(data.cell.text)
             ? data.cell.text.join(' ')
             : String(data.cell.text);
           // autoTable'ın kendi rendering'ini devre dışı bırak
@@ -1314,28 +1316,30 @@ export default function AccommodationTableSection({
         // Türkçe karakterleri doğru render etmek için manuel text rendering
         if (data.cell && data.cell._customText !== undefined) {
           const text = data.cell._customText;
-          
+
           if (text && text.length > 0) {
             // Font ayarlarını al
-            const fontSize = data.cell.styles?.fontSize || (data.section === 'head' ? 11 : 10);
-            const textColor = data.cell.styles?.textColor || (data.section === 'head' ? [255, 255, 255] : [0, 0, 0]);
+            const fontSize = data.cell.styles?.fontSize || (data.section === 'head' ? 10 : 9);
+            const textColor = data.cell.styles?.textColor || (data.section === 'head' ? [255, 255, 255] : [50, 50, 50]);
             const fontStyle = data.cell.styles?.fontStyle || (data.section === 'head' ? 'bold' : 'normal');
             const halign = data.cell.styles?.halign || 'left';
-            
+
             // Font ayarlarını uygula
             doc.setFontSize(fontSize);
             doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-            doc.setFont('helvetica', fontStyle);
-            
+            doc.setFont('Roboto', fontStyle);
+
             // Text pozisyonunu hesapla
-            const paddingLeft = data.cell.padding?.left || 3;
-            const paddingTop = data.cell.padding?.top || 4;
+            const paddingLeft = data.cell.padding?.left || 2;
+            const paddingTop = data.cell.padding?.top || 2;
             const cellWidth = data.cell.width || 30;
-            const cellHeight = data.cell.height || 8;
-            
+            const cellHeight = data.cell.height || 0;
+
             let x = data.cell.x + paddingLeft;
-            const y = data.cell.y + paddingTop + (fontSize * 0.35);
-            
+            // Dikey ortalama için basit bir hesaplama
+            const textHeight = fontSize / 2.8; // Yaklaşık text yüksekliği
+            const y = data.cell.y + (data.cell.height / 2) + (textHeight / 2) - 1;
+
             // Hizalama ayarla
             if (halign === 'center') {
               const textWidth = doc.getTextWidth(text);
@@ -1344,11 +1348,11 @@ export default function AccommodationTableSection({
               const textWidth = doc.getTextWidth(text);
               x = data.cell.x + cellWidth - paddingLeft - textWidth;
             }
-            
+
             // Text'i render et - Unicode desteği ile
             try {
               // Text'i doğrudan render et (Unicode karakterler korunur)
-              const maxWidth = cellWidth - paddingLeft - (data.cell.padding?.right || 3);
+              const maxWidth = cellWidth - paddingLeft - (data.cell.padding?.right || 2);
               if (doc.getTextWidth(text) <= maxWidth) {
                 doc.text(text, x, y);
               } else {
@@ -1369,24 +1373,28 @@ export default function AccommodationTableSection({
           }
         }
       },
-      columnStyles: selectedColumns.reduce((acc, col, index) => {
-        acc[index] = { 
-          cellWidth: columnWidths[index],
-          halign: col === 'gecelikUcret' || col === 'toplamUcret' || col === 'numberOfNights' || col === 'id' ? 'right' : 
-                  col === 'girisTarihi' || col === 'cikisTarihi' ? 'center' : 'left',
-          valign: 'middle',
-          fontSize: 10,
-          cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
-        };
-        return acc;
-      }, {} as any),
-      margin: { top: 32, right: 10, bottom: 20, left: 10 },
-      tableWidth: 'wrap',
-      showHead: 'everyPage',
-      pageBreak: 'auto',
-      theme: 'striped',
-      horizontalPageBreak: false,
-      showFoot: false
+      // Toplam satırı ekle
+      foot: [
+        selectedColumns.map(col => {
+          if (col === 'adiSoyadi') return 'TOPLAM';
+          if (col === 'toplamUcret') {
+            const total = displayRecords.reduce((sum, record) => sum + (record.toplamUcret || 0), 0);
+            return `${total.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+          }
+          if (col === 'gecelikUcret') {
+            const total = displayRecords.reduce((sum, record) => sum + (record.gecelikUcret || 0), 0);
+            return `${total.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+          }
+          return '';
+        })
+      ],
+      footStyles: {
+        fillColor: [240, 240, 240],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        font: 'Roboto',
+        halign: 'right'
+      }
     });
 
     // Her sayfaya sayfa numarası ekle
@@ -1394,13 +1402,13 @@ export default function AccommodationTableSection({
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('Roboto', 'normal');
       const pageText = `Sayfa ${i} / ${pageCount}`;
       doc.text(
         pageText,
         doc.internal.pageSize.getWidth() / 2,
         doc.internal.pageSize.getHeight() - 5,
-        { align: 'center', encoding: 'UTF8' }
+        { align: 'center' }
       );
     }
 
@@ -1433,7 +1441,7 @@ export default function AccommodationTableSection({
             value={filterOrg}
             onChange={(e) => setFilterOrg(e.target.value)}
           />
-          
+
           {/* Gelişmiş Filtreler */}
           <AdvancedFilters
             hotels={hotels.map(h => ({ id: h.id, adi: h.adi }))}
@@ -1444,7 +1452,7 @@ export default function AccommodationTableSection({
               setAdvancedFilters(null);
             }}
           />
-          
+
           {/* Bulk Actions Menu */}
           {selectedRecordIds.length > 0 && (
             <BulkActionsMenu
@@ -1559,119 +1567,119 @@ export default function AccommodationTableSection({
                 paginatedRecords.map((record) => {
                   const isTransferred = transferredRecordIds.has(record.id);
                   return (
-                  <tr 
-                    key={record.id} 
-                    className={`hover:bg-gray-50 ${isTransferred ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedRecordIds.includes(record.id)}
-                        onChange={() => handleSelectRecord(record.id)}
-                        disabled={isTransferred}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{record.adiSoyadi}</div>
-                          <div className="text-sm text-gray-500">{record.unvani}</div>
+                    <tr
+                      key={record.id}
+                      className={`hover:bg-gray-50 ${isTransferred ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedRecordIds.includes(record.id)}
+                          onChange={() => handleSelectRecord(record.id)}
+                          disabled={isTransferred}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{record.adiSoyadi}</div>
+                            <div className="text-sm text-gray-500">{record.unvani}</div>
+                          </div>
+                          {isTransferred && (
+                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 border border-green-300">
+                              Satışa Aktarıldı
+                            </span>
+                          )}
                         </div>
-                        {isTransferred && (
-                          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 border border-green-300">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(record.girisTarihi)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(record.cikisTarihi)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {record.otelAdi || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {isTransferred ? (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                             Satışa Aktarıldı
                           </span>
+                        ) : (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            Aktif
+                          </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(record.girisTarihi)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(record.cikisTarihi)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {record.otelAdi || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {isTransferred ? (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Satışa Aktarıldı
-                        </span>
-                      ) : (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          Aktif
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" style={{ touchAction: 'manipulation' }}>
-                      {!isTransferred && (
-                        <div className="flex items-center justify-end gap-2" style={{ touchAction: 'manipulation' }}>
-                          {canEdit() && (
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleEditClick(record.id);
-                              }}
-                              onTouchEnd={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleEditClick(record.id);
-                              }}
-                              className="text-indigo-600 hover:text-indigo-900 active:text-indigo-700 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
-                              style={{ 
-                                touchAction: 'manipulation',
-                                WebkitTapHighlightColor: 'transparent',
-                                userSelect: 'none',
-                                WebkitUserSelect: 'none',
-                                cursor: 'pointer',
-                                zIndex: 10
-                              }}
-                            >
-                              Düzenle
-                            </button>
-                          )}
-                          {canDelete() && (
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDeleteClick(record.id);
-                              }}
-                              onTouchEnd={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDeleteClick(record.id);
-                              }}
-                              className="text-red-600 hover:text-red-900 active:text-red-700 active:bg-red-50 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
-                              style={{ 
-                                touchAction: 'manipulation',
-                                WebkitTapHighlightColor: 'transparent',
-                                userSelect: 'none',
-                                WebkitUserSelect: 'none',
-                                cursor: 'pointer',
-                                zIndex: 10
-                              }}
-                            >
-                              Sil
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      {isTransferred && (
-                        <span className="text-xs text-gray-500 italic">Satış sayfasında görüntülenebilir</span>
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" style={{ touchAction: 'manipulation' }}>
+                        {!isTransferred && (
+                          <div className="flex items-center justify-end gap-2" style={{ touchAction: 'manipulation' }}>
+                            {canEdit() && (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleEditClick(record.id);
+                                }}
+                                onTouchEnd={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleEditClick(record.id);
+                                }}
+                                className="text-indigo-600 hover:text-indigo-900 active:text-indigo-700 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
+                                style={{
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent',
+                                  userSelect: 'none',
+                                  WebkitUserSelect: 'none',
+                                  cursor: 'pointer',
+                                  zIndex: 10
+                                }}
+                              >
+                                Düzenle
+                              </button>
+                            )}
+                            {canDelete() && (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteClick(record.id);
+                                }}
+                                onTouchEnd={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteClick(record.id);
+                                }}
+                                className="text-red-600 hover:text-red-900 active:text-red-700 active:bg-red-50 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
+                                style={{
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent',
+                                  userSelect: 'none',
+                                  WebkitUserSelect: 'none',
+                                  cursor: 'pointer',
+                                  zIndex: 10
+                                }}
+                              >
+                                Sil
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {isTransferred && (
+                          <span className="text-xs text-gray-500 italic">Satış sayfasında görüntülenebilir</span>
+                        )}
+                      </td>
+                    </tr>
                   );
                 })
               )}
             </tbody>
           </table>
         </div>
-        
+
         {/* Sayfalama */}
         {displayRecords.length > 0 && (
           <Pagination

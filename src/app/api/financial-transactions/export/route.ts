@@ -4,6 +4,7 @@ import { getUserFromToken } from '@/lib/auth';
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { robotoBase64 } from '@/lib/fonts/roboto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +66,10 @@ export async function GET(request: NextRequest) {
         putOnlyUsedFonts: true,
         floatPrecision: 16
       });
+
+      // Font ekle
+      doc.addFileToVFS('Roboto-Regular.ttf', robotoBase64);
+      doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
       
       // PDF metadata ve encoding ayarları
       doc.setProperties({
@@ -76,24 +81,23 @@ export async function GET(request: NextRequest) {
       });
       
       // Türkçe karakter desteği için font ayarları
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('Roboto', 'normal');
       
       // Başlık
       doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Finansal İşlemler Raporu', 14, 22, { encoding: 'UTF8' });
+      doc.setFont('Roboto', 'normal');
+      doc.text('Finansal İşlemler Raporu', 14, 22);
       
       // Tarih aralığı
       if (startDate || endDate) {
         doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('Roboto', 'normal');
         const startDateFormatted = startDate ? new Date(startDate).toLocaleDateString('tr-TR') : 'Başlangıç';
         const endDateFormatted = endDate ? new Date(endDate).toLocaleDateString('tr-TR') : 'Bitiş';
         doc.text(
           `Tarih: ${startDateFormatted} - ${endDateFormatted}`,
           14,
-          30,
-          { encoding: 'UTF8' }
+          30
         );
       }
 
@@ -113,7 +117,7 @@ export async function GET(request: NextRequest) {
         startY: startDate || endDate ? 35 : 30,
         styles: { 
           fontSize: 10,
-          font: 'helvetica',
+          font: 'Roboto',
           fontStyle: 'normal',
           textColor: [0, 0, 0],
           cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
@@ -130,7 +134,7 @@ export async function GET(request: NextRequest) {
           textColor: [255, 255, 255],
           fontStyle: 'bold',
           fontSize: 11,
-          font: 'helvetica',
+          font: 'Roboto',
           halign: 'center',
           valign: 'middle',
           cellPadding: { top: 5, right: 3, bottom: 5, left: 3 },
@@ -142,78 +146,7 @@ export async function GET(request: NextRequest) {
           fillColor: [250, 250, 250],
           textColor: [0, 0, 0]
         },
-        didParseCell: function (data: any) {
-          // Türkçe karakterleri korumak için text'i normalize etme
-          if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
-            if (Array.isArray(data.cell.text)) {
-              data.cell.text = data.cell.text.map((t: any) => {
-                if (t === null || t === undefined) return '';
-                return String(t);
-              });
-            } else {
-              data.cell.text = String(data.cell.text);
-            }
-          }
-        },
-        willDrawCell: function (data: any) {
-          // autoTable'ın kendi text rendering'ini devre dışı bırak
-          if (data.cell && data.cell.text !== undefined && data.cell.text !== null) {
-            data.cell._customText = Array.isArray(data.cell.text) 
-              ? data.cell.text.join(' ')
-              : String(data.cell.text);
-            data.cell.text = '';
-          }
-        },
-        didDrawCell: function (data: any) {
-          // Türkçe karakterleri doğru render etmek için manuel text rendering
-          if (data.cell && data.cell._customText !== undefined) {
-            const text = data.cell._customText;
-            
-            if (text && text.length > 0) {
-              const fontSize = data.cell.styles?.fontSize || (data.section === 'head' ? 11 : 10);
-              const textColor = data.cell.styles?.textColor || (data.section === 'head' ? [255, 255, 255] : [0, 0, 0]);
-              const fontStyle = data.cell.styles?.fontStyle || (data.section === 'head' ? 'bold' : 'normal');
-              const halign = data.cell.styles?.halign || 'left';
-              
-              doc.setFontSize(fontSize);
-              doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-              doc.setFont('helvetica', fontStyle);
-              
-              const paddingLeft = data.cell.padding?.left || 3;
-              const paddingTop = data.cell.padding?.top || 4;
-              const cellWidth = data.cell.width || 30;
-              
-              let x = data.cell.x + paddingLeft;
-              const y = data.cell.y + paddingTop + (fontSize * 0.35);
-              
-              if (halign === 'center') {
-                const textWidth = doc.getTextWidth(text);
-                x = data.cell.x + (cellWidth / 2) - (textWidth / 2);
-              } else if (halign === 'right') {
-                const textWidth = doc.getTextWidth(text);
-                x = data.cell.x + cellWidth - paddingLeft - textWidth;
-              }
-              
-              try {
-                const maxWidth = cellWidth - paddingLeft - (data.cell.padding?.right || 3);
-                if (doc.getTextWidth(text) <= maxWidth) {
-                  doc.text(text, x, y);
-                } else {
-                  let truncatedText = text;
-                  while (doc.getTextWidth(truncatedText) > maxWidth && truncatedText.length > 0) {
-                    truncatedText = truncatedText.slice(0, -1);
-                  }
-                  if (truncatedText.length < text.length) {
-                    truncatedText += '...';
-                  }
-                  doc.text(truncatedText, x, y);
-                }
-              } catch (e) {
-                console.warn('Text render hatası:', e);
-              }
-            }
-          }
-        },
+
         columnStyles: {
           0: { halign: 'center', cellWidth: 25, fontSize: 10 },
           1: { halign: 'center', cellWidth: 20, fontSize: 10 },
@@ -241,13 +174,13 @@ export async function GET(request: NextRequest) {
       // Son tablo pozisyonunu al
       const finalY = (doc as any).lastAutoTable?.finalY || (startDate || endDate ? 35 : 30) + (tableData.length * 10);
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('Roboto', 'normal');
       const totalIncomeText = `Toplam Gelir: ${totalIncome.toFixed(2).replace('.', ',')} TL`;
       const totalExpenseText = `Toplam Gider: ${totalExpense.toFixed(2).replace('.', ',')} TL`;
       const profitText = `Net Kar: ${profit.toFixed(2).replace('.', ',')} TL`;
-      doc.text(totalIncomeText, 14, finalY + 10, { encoding: 'UTF8' });
-      doc.text(totalExpenseText, 14, finalY + 16, { encoding: 'UTF8' });
-      doc.text(profitText, 14, finalY + 22, { encoding: 'UTF8' });
+      doc.text(totalIncomeText, 14, finalY + 10);
+      doc.text(totalExpenseText, 14, finalY + 16);
+      doc.text(profitText, 14, finalY + 22);
 
       const pdfOutput = doc.output('arraybuffer');
       const pdfBuffer = Buffer.from(pdfOutput);
