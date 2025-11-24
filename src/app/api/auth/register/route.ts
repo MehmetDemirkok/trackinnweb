@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           password: hashedPassword,
           role: 'SIRKET_YONETICISI', // Şirket sahibi olarak ŞİRKET_YÖNETİCİSİ rolü
-          permissions: ['dashboard', 'sales', 'statistics'],
+          permissions: ['dashboard', 'home', 'accommodation', 'statistics'],
           companyId: newCompany.id,
         },
         select: {

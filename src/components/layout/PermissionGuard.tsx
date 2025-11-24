@@ -40,9 +40,15 @@ export default function PermissionGuard({ children, requiredPermission }: Permis
               router.replace("/no-access");
               return;
             }
-            
+
             // Kullanıcı yönetimi sayfasına ŞİRKET_YÖNETİCİSİ erişebilir (sadece kendi şirketindeki kullanıcılar)
             if (pathname === '/admin') {
+              setHasAccess(true);
+              setLoading(false);
+              return;
+            }
+            // Şirket yöneticisi tüm operasyonel modüllere erişebilir
+            if (pathname.startsWith('/konaklama-alis') || pathname.startsWith('/konaklama-satis') || pathname.startsWith('/finans')) {
               setHasAccess(true);
               setLoading(false);
               return;
@@ -70,7 +76,7 @@ export default function PermissionGuard({ children, requiredPermission }: Permis
           const pagePermissions: { [key: string]: string } = {
             '/konaklama-alis': 'home',
             '/konaklama-alis/oteller': 'home',
-            '/konaklama-satis': 'home',
+            '/konaklama-satis': 'accommodation',
             '/moduller/transfer': 'transfer',
             '/cariler': 'cariler',
             '/tedarikciler': 'tedarikciler',
@@ -117,7 +123,7 @@ export default function PermissionGuard({ children, requiredPermission }: Permis
         <div className="text-center">
           <div className="text-red-600 text-xl mb-2">🚫</div>
           <p className="text-red-600">Bu sayfaya erişim yetkiniz yok.</p>
-          <button 
+          <button
             onClick={() => router.push('/')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >

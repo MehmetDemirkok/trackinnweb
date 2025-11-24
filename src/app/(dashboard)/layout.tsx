@@ -17,7 +17,8 @@ import {
   PieChart,
   Shield,
   X,
-  Menu
+  Menu,
+  Activity
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -50,6 +51,23 @@ export default function DashboardLayout({
     localStorage.setItem('sidebarCollapsed', String(newState));
   };
 
+  const [currentUser, setCurrentUser] = useState<{ role: string } | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/user');
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const menuItems = [
     {
       name: 'Ana Dashboard',
@@ -77,6 +95,20 @@ export default function DashboardLayout({
       icon: <Shield className="w-5 h-5" />,
     },
   ];
+
+  if (currentUser?.role === 'ADMIN') {
+    menuItems.push({
+      name: 'Şirket Yönetimi',
+      path: '/admin/companies',
+      icon: <Building2 className="w-5 h-5" />,
+    });
+
+    menuItems.push({
+      name: 'Sistem Logları',
+      path: '/admin/logs',
+      icon: <Activity className="w-5 h-5" />,
+    });
+  }
 
   return (
     <AuthGuard>

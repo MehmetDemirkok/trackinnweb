@@ -25,7 +25,23 @@ function LogsPageContent() {
   const [filterModel, setFilterModel] = useState("");
 
   useEffect(() => {
-    fetchLogs();
+    const checkAccess = async () => {
+      try {
+        const res = await fetch('/api/user');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user.role !== 'ADMIN') {
+            window.location.href = '/dashboard'; // Yetkisiz ise dashboard'a at
+            return;
+          }
+          fetchLogs(); // Yetkili ise logları çek
+        }
+      } catch (error) {
+        console.error('Yetki kontrolü hatası:', error);
+      }
+    };
+
+    checkAccess();
   }, []);
 
   const fetchLogs = async () => {
@@ -60,9 +76,9 @@ function LogsPageContent() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Sistem Logları</h1>
-      
+
       {error && <div className="bg-red-100 p-3 mb-4 rounded text-red-700">{error}</div>}
-      
+
       <div className="mb-4 flex gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">İşlem Türü</label>
@@ -77,7 +93,7 @@ function LogsPageContent() {
             <option value="CREATE">Oluşturma</option>
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium mb-1">Model</label>
           <select
@@ -91,7 +107,7 @@ function LogsPageContent() {
           </select>
         </div>
       </div>
-      
+
       {loading ? (
         <div className="text-center p-4">Yükleniyor...</div>
       ) : (
@@ -115,12 +131,12 @@ function LogsPageContent() {
                   <td className="py-2 px-4 border">
                     <span className={
                       log.action === 'DELETE' ? 'text-red-600 font-medium' :
-                      log.action === 'UPDATE' ? 'text-blue-600 font-medium' :
-                      'text-green-600 font-medium'
+                        log.action === 'UPDATE' ? 'text-blue-600 font-medium' :
+                          'text-green-600 font-medium'
                     }>
                       {log.action === 'DELETE' ? 'Silme' :
-                       log.action === 'UPDATE' ? 'Güncelleme' :
-                       'Oluşturma'}
+                        log.action === 'UPDATE' ? 'Güncelleme' :
+                          'Oluşturma'}
                     </span>
                   </td>
                   <td className="py-2 px-4 border">
@@ -147,13 +163,13 @@ function LogsPageContent() {
           </table>
         </div>
       )}
-      
+
       {/* Detay Modal */}
       {detailModalOpen && selectedLog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Log Detayı</h2>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <p className="font-medium">ID:</p>
@@ -163,12 +179,12 @@ function LogsPageContent() {
                 <p className="font-medium">İşlem:</p>
                 <p className={
                   selectedLog.action === 'DELETE' ? 'text-red-600 font-medium' :
-                  selectedLog.action === 'UPDATE' ? 'text-blue-600 font-medium' :
-                  'text-green-600 font-medium'
+                    selectedLog.action === 'UPDATE' ? 'text-blue-600 font-medium' :
+                      'text-green-600 font-medium'
                 }>
                   {selectedLog.action === 'DELETE' ? 'Silme' :
-                   selectedLog.action === 'UPDATE' ? 'Güncelleme' :
-                   'Oluşturma'}
+                    selectedLog.action === 'UPDATE' ? 'Güncelleme' :
+                      'Oluşturma'}
                 </p>
               </div>
               <div>
@@ -196,14 +212,20 @@ function LogsPageContent() {
                 <p className="truncate">{selectedLog.userAgent || 'Bilinmiyor'}</p>
               </div>
             </div>
-            
+
             <div className="mb-4">
               <p className="font-medium mb-2">Kayıt Verisi:</p>
               <pre className="bg-gray-100 p-3 rounded overflow-x-auto">
-                {JSON.stringify(JSON.parse(selectedLog.recordData), null, 2)}
+                {(() => {
+                  try {
+                    return JSON.stringify(JSON.parse(selectedLog.recordData), null, 2);
+                  } catch {
+                    return selectedLog.recordData;
+                  }
+                })()}
               </pre>
             </div>
-            
+
             <div className="flex justify-end">
               <button
                 onClick={() => setDetailModalOpen(false)}

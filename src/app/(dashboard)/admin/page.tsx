@@ -492,7 +492,7 @@ export default function AdminPage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="flex items-center justify-center h-96">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p className="text-gray-600">Yükleniyor...</p>
@@ -503,7 +503,7 @@ export default function AdminPage() {
   // Eğer currentUser yüklenmediyse ve loading false ise, hata durumu
   if (!loading && !currentUser) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Kullanıcı Bilgisi Alınamadı</h1>
@@ -522,7 +522,7 @@ export default function AdminPage() {
   // Admin yetkisi kontrolü
   if (currentUser && !['ADMIN', 'SIRKET_YONETICISI'].includes(currentUser.role)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="text-red-600 text-6xl mb-4">🚫</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Erişim Kısıtlı</h1>
@@ -542,15 +542,15 @@ export default function AdminPage() {
 
   return (
     <>
-      <main className="p-6 bg-gray-50 min-h-screen">
+      <div className="space-y-8">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Kullanıcı Yönetimi</h1>
               <p className="text-gray-600">
-                {currentUser?.role === 'ADMIN' 
-                  ? 'Tüm kullanıcıları ve şirketleri yönetin' 
+                {currentUser?.role === 'ADMIN'
+                  ? 'Tüm kullanıcıları ve şirketleri yönetin'
                   : 'Kendi şirketinizin kullanıcılarını yönetin'}
               </p>
             </div>
@@ -764,9 +764,9 @@ export default function AdminPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             <span className="font-medium text-gray-700">
-                              {user.company?.name || 
-                               companies.find(c => c.id === user.companyId)?.name || 
-                               'Bilinmeyen Şirket'}
+                              {user.company?.name ||
+                                companies.find(c => c.id === user.companyId)?.name ||
+                                'Bilinmeyen Şirket'}
                             </span>
                           </div>
                         ) : (
@@ -1201,7 +1201,7 @@ export default function AdminPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </>
   );
 }
