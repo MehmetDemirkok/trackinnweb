@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
-type MyJwtPayload = JwtPayload & { role: string; userId: number; permissions?: string[] };
+type MyJwtPayload = JwtPayload & { role: string; userId: number; };
 
 export async function POST() {
   try {
@@ -43,8 +43,7 @@ export async function POST() {
         name: user.name,
         role: user.role,
         companyId: user.company.id,
-        companyName: user.company.name,
-        permissions: user.permissions
+        companyName: user.company.name
       },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -59,8 +58,7 @@ export async function POST() {
         name: user.name,
         role: user.role,
         companyId: user.company.id,
-        companyName: user.company.name,
-        permissions: user.permissions
+        companyName: user.company.name
       }
     });
     

@@ -62,10 +62,6 @@ export async function PUT(request: Request, context: any) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
     
-    if (data.permissions !== undefined) {
-      updateData.permissions = data.permissions;
-    }
-    
     // MUDUR şirket değiştiremez
     if (data.companyId !== undefined && decoded.role === 'ADMIN') {
       updateData.companyId = data.companyId;
@@ -80,7 +76,6 @@ export async function PUT(request: Request, context: any) {
         name: true,
         role: true,
         createdAt: true,
-        permissions: true,
         companyId: true,
         company: {
           select: {

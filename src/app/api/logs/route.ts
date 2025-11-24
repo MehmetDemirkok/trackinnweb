@@ -8,7 +8,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 type MyJwtPayload = { 
   id: number; 
   role: string; 
-  permissions?: string[];
   companyId?: number;
 };
 
@@ -27,17 +26,16 @@ export async function GET() {
       return NextResponse.json({ error: 'Geçersiz oturum.' }, { status: 401 });
     }
     
-    // Kullanıcıyı DB'den çekip permissions kontrolü yap
+    // Kullanıcıyı DB'den çekip rol kontrolü yap
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { 
-        permissions: true, 
         role: true,
         companyId: true
       }
     });
     
-    if (!user || (!user.permissions?.includes('logs') && user.role !== 'ADMIN' && user.role !== 'SIRKET_YONETICISI')) {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SIRKET_YONETICISI')) {
       return NextResponse.json({ error: 'Bu sayfaya erişim yetkiniz yok.' }, { status: 403 });
     }
     

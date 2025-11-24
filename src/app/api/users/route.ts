@@ -35,7 +35,6 @@ export async function GET() {
         name: true,
         role: true,
         createdAt: true,
-        permissions: true,
         companyId: true,
         company: {
           select: {
@@ -103,7 +102,6 @@ export async function POST(request: Request) {
         name: data.name || '',
         password: hashedPassword,
         role: data.role || 'SIRKET_YONETICISI',
-        permissions: data.permissions || [],
         companyId: companyId
       },
       select: {
@@ -112,7 +110,6 @@ export async function POST(request: Request) {
         name: true,
         role: true,
         createdAt: true,
-        permissions: true,
         companyId: true,
         company: {
           select: {

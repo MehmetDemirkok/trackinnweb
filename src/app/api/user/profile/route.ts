@@ -58,7 +58,7 @@ export async function PUT(request: Request) {
         name: true,
         role: true,
         createdAt: true,
-        permissions: true
+
       }
     });
     

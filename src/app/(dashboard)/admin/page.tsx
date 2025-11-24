@@ -10,7 +10,6 @@ interface User {
   name: string | null;
   role: 'ADMIN' | 'SIRKET_YONETICISI';
   createdAt: string;
-  permissions?: string[];
   companyId?: number;
   company?: {
     name: string;
@@ -38,7 +37,6 @@ type NewUser = {
   name: string;
   password: string;
   role: 'ADMIN' | 'SIRKET_YONETICISI';
-  permissions: string[];
   companyId: number;
 };
 
@@ -64,7 +62,6 @@ export default function AdminPage() {
     name: '',
     password: '',
     role: 'SIRKET_YONETICISI',
-    permissions: [],
     companyId: 0
   });
 
@@ -72,7 +69,6 @@ export default function AdminPage() {
     id: 0,
     name: '',
     role: 'SIRKET_YONETICISI' as 'ADMIN' | 'SIRKET_YONETICISI',
-    permissions: [] as string[],
     companyId: 0
   });
 
@@ -89,18 +85,6 @@ export default function AdminPage() {
     admin: 0,
     sirketYoneticisi: 0
   });
-
-  // İzinler listesi - Dashboard modüllerine göre
-  const PERMISSIONS = [
-    { key: 'home', label: 'Otel Yönetimi' },
-    // { key: 'transfer', label: 'Araç Takip' },
-    // { key: 'transfer-sales', label: 'Transfer Satışları' },
-    { key: 'accommodation', label: 'Konaklama Satışları' },
-    { key: 'user-management', label: 'Kullanıcı Yönetimi' },
-    { key: 'logs', label: 'Sistem Logları' },
-    { key: 'cariler', label: 'Cariler' },
-    { key: 'tedarikciler', label: 'Tedarikçiler' },
-  ];
 
   // Rol seçenekleri - ŞİRKET_YÖNETİCİSİ sadece ŞİRKET_YÖNETİCİSİ oluşturabilir
   const getRoleOptions = () => {
@@ -294,7 +278,6 @@ export default function AdminPage() {
       name: '',
       password: '',
       role: 'SIRKET_YONETICISI',
-      permissions: [],
       companyId: initialCompanyId
     });
     setShowAddModal(true);
@@ -302,16 +285,10 @@ export default function AdminPage() {
 
   const openEditModal = (user: User) => {
     setSelectedUser(user);
-    // Admin rolü için tüm izinleri otomatik olarak ekle
-    let permissions = user.permissions || [];
-    if (user.role === 'ADMIN') {
-      permissions = PERMISSIONS.map(p => p.key);
-    }
     setEditUser({
       id: user.id,
       name: user.name || '',
       role: user.role,
-      permissions: permissions,
       companyId: user.companyId || 0
     });
     setShowEditModal(true);
@@ -324,13 +301,13 @@ export default function AdminPage() {
 
   const closeAddModal = () => {
     setShowAddModal(false);
-    setNewUser({ email: '', name: '', password: '', role: 'SIRKET_YONETICISI', permissions: [], companyId: 0 });
+    setNewUser({ email: '', name: '', password: '', role: 'SIRKET_YONETICISI', companyId: 0 });
   };
 
   const closeEditModal = () => {
     setShowEditModal(false);
     setSelectedUser(null);
-    setEditUser({ id: 0, name: '', role: 'SIRKET_YONETICISI', permissions: [], companyId: 0 });
+    setEditUser({ id: 0, name: '', role: 'SIRKET_YONETICISI', companyId: 0 });
   };
 
   const closeDeleteModal = () => {
@@ -341,24 +318,12 @@ export default function AdminPage() {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // ŞİRKET_YÖNETİCİSİ rolü için user-management ve logs iznini otomatik olarak ekle
-      let permissions = newUser.permissions;
-      if (newUser.role === 'SIRKET_YONETICISI') {
-        if (!permissions.includes('user-management')) {
-          permissions = [...permissions, 'user-management'];
-        }
-        if (!permissions.includes('logs')) {
-          permissions = [...permissions, 'logs'];
-        }
-      }
-
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           ...newUser,
-          permissions: permissions,
           companyId: newUser.companyId === 0 ? null : newUser.companyId
         })
       });
@@ -379,17 +344,6 @@ export default function AdminPage() {
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // ŞİRKET_YÖNETİCİSİ rolü için user-management ve logs iznini otomatik olarak ekle
-      let permissions = editUser.permissions;
-      if (editUser.role === 'SIRKET_YONETICISI') {
-        if (!permissions.includes('user-management')) {
-          permissions = [...permissions, 'user-management'];
-        }
-        if (!permissions.includes('logs')) {
-          permissions = [...permissions, 'logs'];
-        }
-      }
-
       const res = await fetch(`/api/users/${editUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -397,7 +351,6 @@ export default function AdminPage() {
         body: JSON.stringify({
           name: editUser.name,
           role: editUser.role,
-          permissions: permissions,
           companyId: editUser.companyId === 0 ? null : editUser.companyId
         })
       });
@@ -411,7 +364,7 @@ export default function AdminPage() {
         closeEditModal();
 
         // Başarı mesajı göster
-        alert('Kullanıcı izinleri başarıyla güncellendi! Değişikliklerin etkili olması için dashboard sayfasını yenileyin (F5).');
+        alert('Kullanıcı başarıyla güncellendi!');
       } else {
         console.error('Kullanıcı güncellenirken hata oluştu');
         alert('Kullanıcı güncellenirken hata oluştu!');
@@ -915,14 +868,7 @@ export default function AdminPage() {
                     value={newUser.role}
                     onChange={(e) => {
                       const newRole = e.target.value as 'ADMIN' | 'SIRKET_YONETICISI';
-                      let newPermissions = newUser.permissions;
-
-                      // Admin rolü seçilirse tüm izinleri ekle
-                      if (newRole === 'ADMIN') {
-                        newPermissions = PERMISSIONS.map(p => p.key);
-                      }
-
-                      setNewUser(prev => ({ ...prev, role: newRole, permissions: newPermissions }));
+                      setNewUser(prev => ({ ...prev, role: newRole }));
                     }}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
@@ -964,28 +910,7 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Erişim İzinleri</label>
-                  <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                    {PERMISSIONS.map((perm) => (
-                      <label key={perm.key} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={newUser.permissions.includes(perm.key)}
-                          onChange={(e) => {
-                            setNewUser((prev) =>
-                              e.target.checked
-                                ? { ...prev, permissions: [...prev.permissions, perm.key] }
-                                : { ...prev, permissions: prev.permissions.filter((p) => p !== perm.key) }
-                            );
-                          }}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">{perm.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+
 
                 <div className="flex gap-3 pt-4">
                   <button
@@ -1050,14 +975,7 @@ export default function AdminPage() {
                     value={editUser.role}
                     onChange={(e) => {
                       const newRole = e.target.value as 'ADMIN' | 'SIRKET_YONETICISI';
-                      let newPermissions = editUser.permissions;
-
-                      // Admin rolü seçilirse tüm izinleri ekle
-                      if (newRole === 'ADMIN') {
-                        newPermissions = PERMISSIONS.map(p => p.key);
-                      }
-
-                      setEditUser(prev => ({ ...prev, role: newRole, permissions: newPermissions }));
+                      setEditUser(prev => ({ ...prev, role: newRole }));
                     }}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
@@ -1096,28 +1014,7 @@ export default function AdminPage() {
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Erişim İzinleri</label>
-                  <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                    {PERMISSIONS.map((perm) => (
-                      <label key={perm.key} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editUser.permissions.includes(perm.key)}
-                          onChange={(e) => {
-                            setEditUser((prev) =>
-                              e.target.checked
-                                ? { ...prev, permissions: [...prev.permissions, perm.key] }
-                                : { ...prev, permissions: prev.permissions.filter((p) => p !== perm.key) }
-                            );
-                          }}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">{perm.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+
                 <div className="flex gap-3 pt-4">
                   <button
                     type="submit"

@@ -5,21 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AccommodationTableSection from "@/app/components/AccommodationTableSection";
 import AuthGuard from "@/components/layout/AuthGuard";
 import * as XLSX from 'xlsx';
-import { canViewModule } from '@/lib/permissions';
 
 interface User {
   id: number;
   email: string;
   name?: string;
   role: 'ADMIN' | 'SIRKET_YONETICISI';
-  permissions?: string[];
 }
 
 export default function MunferitKonaklamaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Puantaj raporu için state'ler
@@ -40,7 +37,6 @@ export default function MunferitKonaklamaPage() {
       .then(res => res.json())
       .then(data => {
         setCurrentUser(data.user);
-        setUserPermissions((data.user && data.user.permissions) ? data.user.permissions : []);
         setIsLoading(false);
       })
       .catch(err => {
@@ -49,16 +45,11 @@ export default function MunferitKonaklamaPage() {
       });
   }, []);
 
-  // İzin kontrolü fonksiyonları
-  const hasPermission = (permission: string): boolean => {
-    return userPermissions.includes(permission) || currentUser?.role === 'ADMIN';
-  };
-
   const hasPageAccess = (): boolean => {
-    if (currentUser?.role === 'ADMIN') {
+    if (currentUser?.role === 'ADMIN' || currentUser?.role === 'SIRKET_YONETICISI') {
       return true;
     }
-    return canViewModule(currentUser?.role || '', 'accommodation');
+    return false;
   };
 
   // Puantaj raporu fonksiyonu
@@ -236,8 +227,8 @@ export default function MunferitKonaklamaPage() {
 
       // Başlık satırı
       const headerRow = worksheet.addRow(headers);
-      headerRow.font = { 
-        bold: true, 
+      headerRow.font = {
+        bold: true,
         size: 11,
         name: 'Arial',
         color: { argb: 'FFFFFFFF' }
@@ -247,8 +238,8 @@ export default function MunferitKonaklamaPage() {
         pattern: 'solid',
         fgColor: { argb: 'FF4285F4' },
       };
-      headerRow.alignment = { 
-        horizontal: 'center', 
+      headerRow.alignment = {
+        horizontal: 'center',
         vertical: 'middle',
         wrapText: true
       };
@@ -289,7 +280,7 @@ export default function MunferitKonaklamaPage() {
       worksheet.getColumn(9).width = 15; // Giriş Tarihi
       worksheet.getColumn(10).width = 15; // Çıkış Tarihi
       worksheet.getColumn(11).width = 12; // Gece Sayısı
-      
+
       // Tarih sütunları için genişlik
       for (let i = 12; i <= headers.length; i++) {
         worksheet.getColumn(i).width = 8;

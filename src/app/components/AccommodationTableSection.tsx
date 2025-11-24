@@ -44,7 +44,6 @@ interface User {
   email: string;
   name?: string;
   role: 'ADMIN' | 'SIRKET_YONETICISI';
-  permissions?: string[];
 }
 
 interface AccommodationTableSectionProps {
