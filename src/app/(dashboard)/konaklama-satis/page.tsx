@@ -695,14 +695,14 @@ export default function AccommodationSalesPage() {
   const getPaymentStatusBadge = (status: string) => {
     const badges = {
       ODENMEDI: { color: 'bg-red-100 text-red-700', icon: XCircle, label: 'Ödenmedi' },
-      KISMI_ODENDI: { color: 'bg-yellow-100 text-yellow-700', icon: Clock, label: 'Kısmi Ödendi' },
+      KISMI_ODENDI: { color: 'bg-yellow-100 text-yellow-700', icon: Clock, label: 'Kısmi' },
       ODENDI: { color: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Ödendi' }
     };
     const badge = badges[status as keyof typeof badges] || badges.ODENMEDI;
     const Icon = badge.icon;
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
-        <Icon className="w-3 h-3" />
+      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${badge.color}`}>
+        <Icon className="w-2.5 h-2.5" />
         {badge.label}
       </span>
     );
@@ -822,10 +822,10 @@ export default function AccommodationSalesPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-xs">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
                     <input
                       type="checkbox"
                       checked={selectedSaleIds.length === filteredSales.length && filteredSales.length > 0}
@@ -833,15 +833,33 @@ export default function AccommodationSalesPage() {
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Misafir</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Otel</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alış</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satış</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kar</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ödeme</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
+                    Misafir
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                    Otel / Müşteri
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                    Tarihler
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
+                    Oda
+                  </th>
+                  <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                    Gece
+                  </th>
+                  <th className="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
+                    Fiyatlar
+                  </th>
+                  <th className="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
+                    Kar
+                  </th>
+                  <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                    Ödeme
+                  </th>
+                  <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -857,8 +875,8 @@ export default function AccommodationSalesPage() {
                   </tr>
                 ) : (
                   filteredSales.map((sale) => (
-                    <tr key={sale.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-2 py-2 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedSaleIds.includes(sale.id)}
@@ -866,47 +884,71 @@ export default function AccommodationSalesPage() {
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{sale.adiSoyadi}</div>
-                          <div className="text-sm text-gray-500">{sale.unvani}</div>
+                      <td className="px-2 py-2">
+                        <div className="text-xs font-semibold text-gray-900 truncate">{sale.adiSoyadi}</div>
+                        <div className="text-[11px] text-gray-500 truncate">{sale.unvani || '-'}</div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="text-xs font-medium text-gray-900 truncate">{sale.otelAdi || '-'}</div>
+                        {sale.musteriAdi && (
+                          <div className="text-[10px] text-blue-600 truncate">{sale.musteriAdi}</div>
+                        )}
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="text-[11px]">
+                          <div className="text-gray-900 font-medium whitespace-nowrap">{sale.girisTarihi}</div>
+                          <div className="text-gray-500 whitespace-nowrap">{sale.cikisTarihi}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {sale.otelAdi || '-'}
+                      <td className="px-2 py-2">
+                        <div className="text-[11px] text-gray-900 font-medium truncate">{sale.odaTipi || '-'}</div>
+                        {sale.konaklamaTipi && (
+                          <div className="mt-0.5">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${sale.konaklamaTipi === 'UHD' ? 'bg-purple-100 text-purple-700' :
+                              sale.konaklamaTipi === 'FB' ? 'bg-blue-100 text-blue-700' :
+                                sale.konaklamaTipi === 'HB' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-700'
+                              }`}>
+                              {sale.konaklamaTipi}
+                            </span>
+                          </div>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {sale.girisTarihi} - {sale.cikisTarihi}
+                      <td className="px-2 py-2 text-center">
+                        <div className="text-xs font-bold text-gray-900">{sale.numberOfNights || 0}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ₺{sale.toplamAlisFiyati.toLocaleString('tr-TR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                        ₺{sale.toplamSatisFiyati.toLocaleString('tr-TR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-purple-600">
-                          ₺{sale.kar.toLocaleString('tr-TR')}
+                      <td className="px-2 py-2 text-right">
+                        <div className="text-xs font-semibold text-green-600 whitespace-nowrap">
+                          ₺{sale.toplamSatisFiyati?.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </div>
-                        <div className="text-xs text-gray-500">%{sale.karOrani.toFixed(1)}</div>
+                        <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                          ₺{sale.toplamAlisFiyati?.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} alış
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {sale.musteriAdi || '-'}
+                      <td className="px-2 py-2 text-right">
+                        <div className="text-xs font-semibold text-purple-600 whitespace-nowrap">
+                          ₺{sale.kar?.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                          %{sale.karOrani?.toFixed(1)}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 text-center">
                         {getPaymentStatusBadge(sale.odemeDurumu)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
+                      <td className="px-1 py-2 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleEdit(sale)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-1 rounded transition-colors"
+                            title="Düzenle"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(sale.id)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
+                            title="Sil"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
