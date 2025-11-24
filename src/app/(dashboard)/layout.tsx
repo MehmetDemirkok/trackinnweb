@@ -25,7 +25,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar open/close
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Desktop sidebar collapsed
   const pathname = usePathname();
 
   // Close sidebar on route change (mobile)
@@ -33,8 +34,20 @@ export default function DashboardLayout({
     setSidebarOpen(false);
   }, [pathname]);
 
+  // Load collapsed state from localStorage
+  useEffect(() => {
+    const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    setSidebarCollapsed(collapsed);
+  }, []);
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const toggleCollapse = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', String(newState));
   };
 
   const menuItems = [
@@ -79,24 +92,44 @@ export default function DashboardLayout({
 
           {/* Sidebar */}
           <aside
-            className={`fixed md:static top-0 left-0 h-full shadow-xl md:shadow-none z-50 transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-              } w-[280px] flex flex-col border-r`}
-            style={{ 
-              backgroundColor: 'var(--sidebar-bg)', 
-              borderColor: 'var(--sidebar-border)' 
+            className={`fixed md:static top-0 left-0 h-full shadow-xl md:shadow-none z-50 transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+              } flex flex-col border-r`}
+            style={{
+              backgroundColor: 'var(--sidebar-bg)',
+              borderColor: 'var(--sidebar-border)',
+              width: sidebarCollapsed ? '80px' : '280px'
             }}
           >
             {/* Sidebar Header */}
-            <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
+            <div className="h-16 flex items-center justify-between px-3 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
+              {/* Logo Area */}
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: 'var(--primary)' }}>
                   T
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>TrackINN</span>
-                  <span className="text-xs leading-tight" style={{ color: 'var(--text-muted)' }}>Web APP</span>
-                </div>
+                {!sidebarCollapsed && (
+                  <div className="flex flex-col">
+                    <span className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>TrackINN</span>
+                    <span className="text-xs leading-tight" style={{ color: 'var(--text-muted)' }}>Web APP</span>
+                  </div>
+                )}
               </div>
+
+              {/* Hamburger Toggle Button (Desktop) */}
+              <button
+                onClick={toggleCollapse}
+                className="hidden md:block p-1.5 rounded-lg transition-colors flex-shrink-0"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title={sidebarCollapsed ? 'Genişlet' : 'Daralt'}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              {/* Close Button (Mobile) */}
               <button
                 onClick={toggleSidebar}
                 className="md:hidden p-2 rounded-lg transition-colors"
@@ -121,7 +154,7 @@ export default function DashboardLayout({
                   <Link
                     key={index}
                     href={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${sidebarCollapsed ? 'justify-center' : ''}`}
                     style={{
                       backgroundColor: active ? 'var(--active-bg)' : 'transparent',
                       color: active ? 'var(--active-text)' : 'var(--text-secondary)',
@@ -138,9 +171,10 @@ export default function DashboardLayout({
                         e.currentTarget.style.color = 'var(--text-secondary)';
                       }
                     }}
+                    title={sidebarCollapsed ? item.name : ''}
                   >
                     {item.icon}
-                    <span>{item.name}</span>
+                    {!sidebarCollapsed && <span>{item.name}</span>}
                   </Link>
                 );
               })}
@@ -155,11 +189,11 @@ export default function DashboardLayout({
           {/* Main Content Wrapper */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Top Navigation Bar */}
-            <header 
+            <header
               className="h-16 border-b flex items-center justify-between px-4 sm:px-8"
-              style={{ 
-                backgroundColor: 'var(--header-bg)', 
-                borderColor: 'var(--header-border)' 
+              style={{
+                backgroundColor: 'var(--header-bg)',
+                borderColor: 'var(--header-border)'
               }}
             >
               <div className="flex items-center gap-4">

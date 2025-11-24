@@ -15,7 +15,8 @@ import {
   Plus,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  FileSpreadsheet
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -69,6 +70,13 @@ export default function AccommodationSalesPage() {
     totalRevenue: 0,
     totalProfit: 0,
     avgProfitMargin: 0
+  });
+
+  // Puantaj raporu state'leri
+  const [showPuantajFilterModal, setShowPuantajFilterModal] = useState(false);
+  const [puantajFilters, setPuantajFilters] = useState({
+    baslangicTarihi: '',
+    bitisTarihi: ''
   });
 
   useEffect(() => {
@@ -197,6 +205,218 @@ export default function AccommodationSalesPage() {
       alert('Toplu silme sırasında bir hata oluştu');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Puantaj raporu modalını açan fonksiyon
+  const handlePuantajRaporu = async () => {
+    try {
+      if (filteredSales.length > 0) {
+        const allDates = filteredSales.flatMap((record: any) => [
+          new Date(record.girisTarihi),
+          new Date(record.cikisTarihi)
+        ]);
+        const minDate = new Date(Math.min(...allDates.map((date: Date) => date.getTime())));
+        const maxDate = new Date(Math.max(...allDates.map((date: Date) => date.getTime())));
+
+        const minDateStr = minDate.toISOString().split('T')[0];
+        const maxDateStr = maxDate.toISOString().split('T')[0];
+
+        setPuantajFilters({
+          baslangicTarihi: minDateStr,
+          bitisTarihi: maxDateStr
+        });
+      }
+    } catch (error) {
+      console.error('Tarih hesaplama hatası:', error);
+    }
+
+    setShowPuantajFilterModal(true);
+  };
+
+  // Puantaj raporu Excel dosyası oluşturma fonksiyonu
+  const generatePuantajRaporu = async () => {
+    const { baslangicTarihi, bitisTarihi } = puantajFilters;
+
+    try {
+      let records = filteredSales;
+
+      let startDate = baslangicTarihi ? new Date(baslangicTarihi) : null;
+      let endDate = bitisTarihi ? new Date(bitisTarihi) : null;
+
+      if (!startDate || !endDate) {
+        const allDates = records.flatMap((record: any) => [
+          new Date(record.girisTarihi),
+          new Date(record.cikisTarihi)
+        ]);
+        const minDate = new Date(Math.min(...allDates.map((date: Date) => date.getTime())));
+        const maxDate = new Date(Math.max(...allDates.map((date: Date) => date.getTime())));
+
+        if (!startDate) startDate = minDate;
+        if (!endDate) endDate = maxDate;
+      }
+
+      records = records.filter((record: any) => {
+        const recordBaslangic = new Date(record.girisTarihi);
+        const recordBitis = new Date(record.cikisTarihi);
+        return recordBaslangic <= endDate && recordBitis >= startDate;
+      });
+
+      const sortedRecords = [...records].sort((a, b) => {
+        const dateA = new Date(a.girisTarihi).getTime();
+        const dateB = new Date(b.girisTarihi).getTime();
+        return dateA - dateB;
+      });
+
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Satış Puantajı');
+
+      const headers = [
+        'Misafir',
+        'Ünvan',
+        'Otel',
+        'Müşteri',
+        'Alış Fiy.',
+        'Satış Fiy.',
+        'Kar',
+        'Kar %',
+        'Ödeme',
+        'Giriş',
+        'Çıkış'
+      ];
+
+      const dateRange: Date[] = [];
+      const currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        dateRange.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      dateRange.forEach(date => {
+        headers.push(date.toLocaleDateString('tr-TR'));
+      });
+
+      const headerRow = worksheet.addRow(headers);
+      headerRow.font = {
+        bold: true,
+        size: 11,
+        name: 'Arial',
+        color: { argb: 'FFFFFFFF' }
+      };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4285F4' }
+      };
+      headerRow.alignment = {
+        horizontal: 'center',
+        vertical: 'middle',
+        wrapText: true
+      };
+      headerRow.height = 25;
+
+      sortedRecords.forEach(record => {
+        const row = [
+          record.adiSoyadi || '',
+          record.unvani || '',
+          record.otelAdi || '',
+          record.musteriAdi || '-',
+          record.toplamAlisFiyati || 0,
+          record.toplamSatisFiyati || 0,
+          record.kar || 0,
+          record.karOrani || 0,
+          record.odemeDurumu || '-',
+          new Date(record.girisTarihi).toLocaleDateString('tr-TR'),
+          new Date(record.cikisTarihi).toLocaleDateString('tr-TR')
+        ];
+
+        dateRange.forEach(date => {
+          const recordStart = new Date(record.girisTarihi);
+          const recordEnd = new Date(record.cikisTarihi);
+
+          if (date >= recordStart && date <= recordEnd) {
+            row.push('✓');
+          } else {
+            row.push('');
+          }
+        });
+
+        const dataRow = worksheet.addRow(row);
+        dataRow.font = { size: 10, name: 'Arial' };
+        dataRow.alignment = { vertical: 'middle', wrapText: true };
+
+        dataRow.getCell(5).numFmt = '#,##0.00 ₺';
+        dataRow.getCell(6).numFmt = '#,##0.00 ₺';
+        dataRow.getCell(7).numFmt = '#,##0.00 ₺';
+        dataRow.getCell(8).numFmt = '0.00%';
+
+        for (let i = 5; i <= 8; i++) {
+          dataRow.getCell(i).alignment = { horizontal: 'right', vertical: 'middle' };
+        }
+        dataRow.getCell(9).alignment = { horizontal: 'center', vertical: 'middle' };
+        dataRow.getCell(10).alignment = { horizontal: 'center', vertical: 'middle' };
+        dataRow.getCell(11).alignment = { horizontal: 'center', vertical: 'middle' };
+
+        for (let i = 12; i <= headers.length; i++) {
+          dataRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+      });
+
+      worksheet.getColumn(1).width = 20;
+      worksheet.getColumn(2).width = 15;
+      worksheet.getColumn(3).width = 20;
+      worksheet.getColumn(4).width = 20;
+      worksheet.getColumn(5).width = 15;
+      worksheet.getColumn(6).width = 15;
+      worksheet.getColumn(7).width = 15;
+      worksheet.getColumn(8).width = 12;
+      worksheet.getColumn(9).width = 15;
+      worksheet.getColumn(10).width = 15;
+      worksheet.getColumn(11).width = 15;
+
+      for (let i = 12; i <= headers.length; i++) {
+        worksheet.getColumn(i).width = 8;
+      }
+
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+      });
+
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1 && rowNumber % 2 === 0) {
+          row.eachCell((cell) => {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFF5F5F5' }
+            };
+          });
+        }
+      });
+
+      const fileName = `Satis_Puantaj_${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}.xlsx`;
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      setShowPuantajFilterModal(false);
+    } catch (error) {
+      console.error('Puantaj raporu oluşturulurken hata:', error);
+      alert('Puantaj raporu oluşturulurken bir hata oluştu.');
     }
   };
 
@@ -516,6 +736,13 @@ export default function AccommodationSalesPage() {
             </button>
           )}
           <button
+            onClick={handlePuantajRaporu}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Puantaj Export
+          </button>
+          <button
             onClick={handleExportExcel}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
@@ -741,6 +968,59 @@ export default function AccommodationSalesPage() {
                     Sil
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Puantaj Filtre Modalı */}
+      {showPuantajFilterModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Puantaj Raporu Filtrele</h2>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="baslangicTarihi" className="block text-sm font-medium text-gray-700 mb-1">
+                  Başlangıç Tarihi
+                </label>
+                <input
+                  type="date"
+                  id="baslangicTarihi"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={puantajFilters.baslangicTarihi}
+                  onChange={(e) => setPuantajFilters(prev => ({ ...prev, baslangicTarihi: e.target.value }))}
+                  max={puantajFilters.bitisTarihi || undefined}
+                />
+              </div>
+              <div>
+                <label htmlFor="bitisTarihi" className="block text-sm font-medium text-gray-700 mb-1">
+                  Bitiş Tarihi
+                </label>
+                <input
+                  type="date"
+                  id="bitisTarihi"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={puantajFilters.bitisTarihi}
+                  onChange={(e) => setPuantajFilters(prev => ({ ...prev, bitisTarihi: e.target.value }))}
+                  min={puantajFilters.baslangicTarihi || undefined}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setShowPuantajFilterModal(false)}
+              >
+                İptal
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                onClick={async () => {
+                  await generatePuantajRaporu();
+                }}
+              >
+                Rapor Oluştur
               </button>
             </div>
           </div>

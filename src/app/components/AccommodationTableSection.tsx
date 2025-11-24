@@ -1501,10 +1501,10 @@ export default function AccommodationTableSection({
       {/* Tablo */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <div className="overflow-x-auto" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}>
-          <table className="min-w-full divide-y divide-gray-200" style={{ touchAction: 'manipulation' }}>
+          <table className="min-w-full divide-y divide-gray-200 text-xs" style={{ touchAction: 'manipulation' }}>
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
                   <input
                     type="checkbox"
                     checked={selectedRecordIds.length === paginatedRecords.length && paginatedRecords.length > 0}
@@ -1513,53 +1513,53 @@ export default function AccommodationTableSection({
                   />
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 min-w-[140px]"
                   onClick={() => handleSort('adiSoyadi')}
                 >
                   <div className="flex items-center">
-                    Adı Soyadı
+                    Misafir
                     <SortIcon column="adiSoyadi" />
                   </div>
                 </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                  Otel
+                </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 min-w-[100px]"
                   onClick={() => handleSort('girisTarihi')}
                 >
                   <div className="flex items-center">
-                    Giriş Tarihi
+                    Tarihler
                     <SortIcon column="girisTarihi" />
                   </div>
                 </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('cikisTarihi')}
-                >
-                  <div className="flex items-center">
-                    Çıkış Tarihi
-                    <SortIcon column="cikisTarihi" />
-                  </div>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
+                  Oda
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Otel
+                <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  Gece
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
+                  Ücret
+                </th>
+                <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Durum
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  İşlemler
+                <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200" style={{ touchAction: 'manipulation' }}>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                     Yükleniyor...
                   </td>
                 </tr>
               ) : paginatedRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -1569,9 +1569,9 @@ export default function AccommodationTableSection({
                   return (
                     <tr
                       key={record.id}
-                      className={`hover:bg-gray-50 ${isTransferred ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}
+                      className={`hover:bg-gray-50 transition-colors ${isTransferred ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedRecordIds.includes(record.id)}
@@ -1580,42 +1580,77 @@ export default function AccommodationTableSection({
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{record.adiSoyadi}</div>
-                            <div className="text-sm text-gray-500">{record.unvani}</div>
+                      <td className="px-2 py-2">
+                        <div className="flex items-start gap-1.5">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold text-gray-900 truncate">{record.adiSoyadi}</div>
+                            <div className="text-[11px] text-gray-500 truncate">{record.unvani || '-'}</div>
+                            {record.kurumCari && (
+                              <div className="text-[10px] text-blue-600 truncate">{record.kurumCari}</div>
+                            )}
                           </div>
                           {isTransferred && (
-                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 border border-green-300">
-                              Satışa Aktarıldı
+                            <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded-full bg-green-100 text-green-700 whitespace-nowrap">
+                              Aktarıldı
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(record.girisTarihi)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(record.cikisTarihi)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {record.otelAdi || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {isTransferred ? (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Satışa Aktarıldı
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            Aktif
-                          </span>
+                      <td className="px-2 py-2">
+                        <div className="text-xs font-medium text-gray-900 truncate">
+                          {record.otelAdi || '-'}
+                        </div>
+                        {(record.organization?.name || record.organizasyonAdi) && (
+                          <div className="text-[10px] text-gray-500 truncate">
+                            {record.organization?.name || record.organizasyonAdi}
+                          </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" style={{ touchAction: 'manipulation' }}>
+                      <td className="px-2 py-2">
+                        <div className="text-[11px]">
+                          <div className="text-gray-900 font-medium whitespace-nowrap">
+                            {formatDate(record.girisTarihi)}
+                          </div>
+                          <div className="text-gray-500 whitespace-nowrap">
+                            {formatDate(record.cikisTarihi)}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="text-[11px] text-gray-900 font-medium truncate">{record.odaTipi}</div>
+                        <div className="mt-0.5">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${record.konaklamaTipi === 'UHD' ? 'bg-purple-100 text-purple-700' :
+                            record.konaklamaTipi === 'FB' ? 'bg-blue-100 text-blue-700' :
+                              record.konaklamaTipi === 'HB' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                            }`}>
+                            {record.konaklamaTipi}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-center">
+                        <div className="text-xs font-bold text-gray-900">
+                          {record.numberOfNights || 0}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-right">
+                        <div className="text-xs font-semibold text-gray-900 whitespace-nowrap">
+                          ₺{record.toplamUcret?.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                          ₺{record.gecelikUcret?.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/g
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-center">
+                        {isTransferred ? (
+                          <span className="w-2 h-2 rounded-full bg-green-500 inline-block" title="Satışa Aktarıldı"></span>
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" title="Aktif"></span>
+                        )}
+                      </td>
+                      <td className="px-1 py-2 whitespace-nowrap text-center" style={{ touchAction: 'manipulation' }}>
                         {!isTransferred && (
-                          <div className="flex items-center justify-end gap-2" style={{ touchAction: 'manipulation' }}>
+                          <div className="flex items-center justify-center gap-1" style={{ touchAction: 'manipulation' }}>
                             {canEdit() && (
                               <button
                                 onClick={(e) => {
@@ -1628,17 +1663,17 @@ export default function AccommodationTableSection({
                                   e.stopPropagation();
                                   handleEditClick(record.id);
                                 }}
-                                className="text-indigo-600 hover:text-indigo-900 active:text-indigo-700 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
+                                className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-1 rounded transition-colors"
                                 style={{
                                   touchAction: 'manipulation',
                                   WebkitTapHighlightColor: 'transparent',
-                                  userSelect: 'none',
-                                  WebkitUserSelect: 'none',
-                                  cursor: 'pointer',
-                                  zIndex: 10
+                                  cursor: 'pointer'
                                 }}
+                                title="Düzenle"
                               >
-                                Düzenle
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
                               </button>
                             )}
                             {canDelete() && (
@@ -1653,17 +1688,17 @@ export default function AccommodationTableSection({
                                   e.stopPropagation();
                                   handleDeleteClick(record.id);
                                 }}
-                                className="text-red-600 hover:text-red-900 active:text-red-700 active:bg-red-50 touch-manipulation select-none px-3 py-2 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center font-medium"
+                                className="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
                                 style={{
                                   touchAction: 'manipulation',
                                   WebkitTapHighlightColor: 'transparent',
-                                  userSelect: 'none',
-                                  WebkitUserSelect: 'none',
-                                  cursor: 'pointer',
-                                  zIndex: 10
+                                  cursor: 'pointer'
                                 }}
+                                title="Sil"
                               >
-                                Sil
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
                               </button>
                             )}
                           </div>
