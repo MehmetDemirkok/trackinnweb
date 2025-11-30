@@ -94,7 +94,12 @@ export default function DashboardPage() {
 
     // Dashboard istatistikleri
     fetch('/api/dashboard/stats')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Stats fetch failed');
+        }
+        return res.json();
+      })
       .then((data) => {
         setStats(data);
         setLoading(false);
