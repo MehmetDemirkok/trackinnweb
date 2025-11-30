@@ -134,6 +134,29 @@ export default function AccommodationSalesPage() {
     setShowEditModal(true);
   };
 
+  const handlePaymentStatusChange = async (saleId: number, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/accommodation-sales/${saleId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          odemeDurumu: newStatus,
+        }),
+      });
+
+      if (res.ok) {
+        // Silently update the list without alert
+        fetchSales();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Güncelleme başarısız');
+      }
+    } catch (error) {
+      console.error('Payment status update error:', error);
+      alert('Güncelleme sırasında bir hata oluştu');
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (!confirm('Bu satış kaydını silmek istediğinizden emin misiniz?')) return;
 
@@ -934,7 +957,22 @@ export default function AccommodationSalesPage() {
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
-                        {getPaymentStatusBadge(sale.odemeDurumu)}
+                        <select
+                          value={sale.odemeDurumu}
+                          onChange={(e) => handlePaymentStatusChange(sale.id, e.target.value)}
+                          className={
+                            `text-[10px] font-semibold px-2 py-1 rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all ${sale.odemeDurumu === 'ODENDI'
+                              ? 'bg-green-100 text-green-700 focus:ring-green-500'
+                              : sale.odemeDurumu === 'KISMI_ODENDI'
+                                ? 'bg-yellow-100 text-yellow-700 focus:ring-yellow-500'
+                                : 'bg-red-100 text-red-700 focus:ring-red-500'
+                            }`
+                          }
+                        >
+                          <option value="ODENMEDI">Ödenmedi</option>
+                          <option value="KISMI_ODENDI">Kısmi</option>
+                          <option value="ODENDI">Ödendi</option>
+                        </select>
                       </td>
                       <td className="px-1 py-2 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center gap-1">
@@ -1012,6 +1050,202 @@ export default function AccommodationSalesPage() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Düzenleme Modalı */}
+      {showEditModal && editingSale && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+              <h2 className="text-2xl font-bold text-gray-900">Satış Kaydını Düzenle</h2>
+              <p className="text-sm text-gray-500 mt-1">{editingSale.adiSoyadi} - {editingSale.otelAdi}</p>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+
+                try {
+                  const res = await fetch(`/api/accommodation-sales/${editingSale.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      satisFiyati: parseFloat(formData.get('satisFiyati') as string),
+                      musteriAdi: formData.get('musteriAdi') as string,
+                      musteriCariKodu: formData.get('musteriCariKodu') as string,
+                      faturaDurumu: formData.get('faturaDurumu') as string,
+                      odemeDurumu: formData.get('odemeDurumu') as string,
+                      odenenTutar: parseFloat(formData.get('odenenTutar') as string) || 0,
+                      notlar: formData.get('notlar') as string,
+                    }),
+                  });
+
+                  if (res.ok) {
+                    alert('Satış kaydı güncellendi');
+                    setShowEditModal(false);
+                    setEditingSale(null);
+                    fetchSales();
+                  } else {
+                    const data = await res.json();
+                    alert(data.error || 'Güncelleme başarısız');
+                  }
+                } catch (error) {
+                  console.error('Update error:', error);
+                  alert('Güncelleme sırasında bir hata oluştu');
+                }
+              }}
+              className="p-6 space-y-6"
+            >
+              {/* Misafir Bilgileri - Read Only */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Konaklama Bilgileri</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Misafir:</span>
+                    <p className="font-medium text-gray-900">{editingSale.adiSoyadi}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Otel:</span>
+                    <p className="font-medium text-gray-900">{editingSale.otelAdi}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Giriş:</span>
+                    <p className="font-medium text-gray-900">{new Date(editingSale.girisTarihi).toLocaleDateString('tr-TR')}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Çıkış:</span>
+                    <p className="font-medium text-gray-900">{new Date(editingSale.cikisTarihi).toLocaleDateString('tr-TR')}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Alış Fiyatı:</span>
+                    <p className="font-medium text-gray-900">₺{editingSale.toplamAlisFiyati.toLocaleString('tr-TR')}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Editable Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Satış Fiyatı (Gecelik) *
+                  </label>
+                  <input
+                    type="number"
+                    name="satisFiyati"
+                    step="0.01"
+                    min="0"
+                    defaultValue={editingSale.satisFiyati}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Müşteri Adı
+                  </label>
+                  <input
+                    type="text"
+                    name="musteriAdi"
+                    defaultValue={editingSale.musteriAdi || ''}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Müşteri Cari Kodu
+                  </label>
+                  <input
+                    type="text"
+                    name="musteriCariKodu"
+                    defaultValue={editingSale.musteriCariKodu || ''}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fatura Durumu *
+                  </label>
+                  <select
+                    name="faturaDurumu"
+                    defaultValue={editingSale.faturaDurumu}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="BEKLIYOR">Bekliyor</option>
+                    <option value="KESILDI">Kesildi</option>
+                    <option value="IPTAL">İptal</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ödeme Durumu *
+                  </label>
+                  <select
+                    name="odemeDurumu"
+                    defaultValue={editingSale.odemeDurumu}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="ODENMEDI">Ödenmedi</option>
+                    <option value="KISMI_ODENDI">Kısmi Ödendi</option>
+                    <option value="ODENDI">Ödendi</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ödenen Tutar
+                  </label>
+                  <input
+                    type="number"
+                    name="odenenTutar"
+                    step="0.01"
+                    min="0"
+                    defaultValue={editingSale.odenenTutar}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notlar
+                </label>
+                <textarea
+                  name="notlar"
+                  rows={3}
+                  defaultValue={editingSale.notlar || ''}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Satışla ilgili notlar..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingSale(null);
+                  }}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Güncelle
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
