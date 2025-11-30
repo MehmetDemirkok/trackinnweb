@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-    PieChart,
-    TrendingUp,
-    TrendingDown,
-    DollarSign,
-    CreditCard,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  CreditCard,
   Calendar,
   Plus,
   Edit,
@@ -57,6 +57,12 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<FinancialTransaction | null>(null);
+  const [initialValues, setInitialValues] = useState<{
+    type: 'GELIR' | 'GIDER';
+    category: string;
+    description: string;
+    template?: string;
+  } | null>(null);
   const [filters, setFilters] = useState({
     type: '',
     category: '',
@@ -178,13 +184,13 @@ export default function FinancePage() {
         borderColor: 'var(--card-border)',
       }}
     >
-            <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div
           className="p-3 rounded-xl"
           style={{ backgroundColor: bgClass || 'var(--muted-background)' }}
         >
           <Icon className="w-6 h-6" style={{ color: colorClass || 'var(--primary)' }} />
-                </div>
+        </div>
         {trend !== undefined && (
           <span
             className="text-xs font-medium px-2 py-1 rounded-full"
@@ -195,10 +201,10 @@ export default function FinancePage() {
           >
             {trend > 0 ? '+' : ''}
             {trend}%
-                    </span>
-                )}
-            </div>
-            <div>
+          </span>
+        )}
+      </div>
+      <div>
         <h3 className="text-3xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
           {new Intl.NumberFormat('tr-TR', {
             style: 'currency',
@@ -210,9 +216,9 @@ export default function FinancePage() {
         <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
           {title}
         </p>
-            </div>
-        </div>
-    );
+      </div>
+    </div>
+  );
 
   const getCategoryLabel = (category: string) => {
     const labels: { [key: string]: string } = {
@@ -227,11 +233,43 @@ export default function FinancePage() {
     return labels[category] || category;
   };
 
-    return (
-        <div className="space-y-8">
+  const handleQuickAction = (action: 'INCOMING_TRANSFER' | 'PAYMENT' | 'SUPPLIER_INVOICE' | 'EXPENSE_INVOICE') => {
+    const defaults = {
+      INCOMING_TRANSFER: {
+        type: 'GELIR' as const,
+        category: 'DİĞER',
+        description: 'Gelen Havale - ',
+        template: 'INCOMING_TRANSFER',
+      },
+      PAYMENT: {
+        type: 'GIDER' as const,
+        category: 'TEDARIKCI_ODEMESI',
+        description: 'Ödeme - ',
+        template: 'PAYMENT',
+      },
+      SUPPLIER_INVOICE: {
+        type: 'GIDER' as const,
+        category: 'TEDARIKCI_ODEMESI',
+        description: 'Fatura - ',
+        template: 'SUPPLIER_INVOICE',
+      },
+      EXPENSE_INVOICE: {
+        type: 'GIDER' as const,
+        category: 'OFIS_GIDERLERI',
+        description: 'Gider - ',
+        template: 'EXPENSE_INVOICE',
+      },
+    };
+
+    setInitialValues(defaults[action]);
+    setShowModal(true);
+  };
+
+  return (
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-            <div>
+        <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             Finans Yönetimi
           </h1>
@@ -277,6 +315,7 @@ export default function FinancePage() {
           <button
             onClick={() => {
               setEditingTransaction(null);
+              setInitialValues(null);
               setShowModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-colors"
@@ -292,38 +331,109 @@ export default function FinancePage() {
             Yeni İşlem
           </button>
         </div>
-            </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button
+          onClick={() => handleQuickAction('INCOMING_TRANSFER')}
+          className="p-4 rounded-xl border transition-all hover:shadow-md text-left flex items-center gap-4 group"
+          style={{
+            backgroundColor: 'var(--card)',
+            borderColor: 'var(--card-border)',
+          }}
+        >
+          <div className="p-3 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Gelen Havale</h3>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Gelir girişi yap</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => handleQuickAction('PAYMENT')}
+          className="p-4 rounded-xl border transition-all hover:shadow-md text-left flex items-center gap-4 group"
+          style={{
+            backgroundColor: 'var(--card)',
+            borderColor: 'var(--card-border)',
+          }}
+        >
+          <div className="p-3 rounded-lg bg-red-100 text-red-600 group-hover:bg-red-200 transition-colors">
+            <CreditCard className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Ödeme Yap</h3>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Gider çıkışı yap</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => handleQuickAction('SUPPLIER_INVOICE')}
+          className="p-4 rounded-xl border transition-all hover:shadow-md text-left flex items-center gap-4 group"
+          style={{
+            backgroundColor: 'var(--card)',
+            borderColor: 'var(--card-border)',
+          }}
+        >
+          <div className="p-3 rounded-lg bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-colors">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Gelen Fatura</h3>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Tedarikçi faturası işle</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => handleQuickAction('EXPENSE_INVOICE')}
+          className="p-4 rounded-xl border transition-all hover:shadow-md text-left flex items-center gap-4 group"
+          style={{
+            backgroundColor: 'var(--card)',
+            borderColor: 'var(--card-border)',
+          }}
+        >
+          <div className="p-3 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-colors">
+            <DollarSign className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Gider Faturası</h3>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Ofis/Genel gider işle</p>
+          </div>
+        </button>
+      </div>
 
       {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard
-                    title="Toplam Gelir"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Toplam Gelir"
           value={stats.income}
-                    icon={TrendingUp}
+          icon={TrendingUp}
           colorClass="#10b981"
           bgClass="rgba(16, 185, 129, 0.1)"
-                    trend={12}
-                />
-                <StatCard
-                    title="Toplam Gider"
+          trend={12}
+        />
+        <StatCard
+          title="Toplam Gider"
           value={stats.expense}
-                    icon={TrendingDown}
+          icon={TrendingDown}
           colorClass="#ef4444"
           bgClass="rgba(239, 68, 68, 0.1)"
-                    trend={-5}
-                />
-                <StatCard
-                    title="Net Kar"
+          trend={-5}
+        />
+        <StatCard
+          title="Net Kar"
           value={stats.profit}
-                    icon={PieChart}
+          icon={PieChart}
           colorClass="#3b82f6"
           bgClass="rgba(59, 130, 246, 0.1)"
-                    trend={8}
-                />
-                <StatCard
+          trend={8}
+        />
+        <StatCard
           title="Toplam İşlem"
           value={stats.total}
-                    icon={CreditCard}
+          icon={CreditCard}
           colorClass="#f59e0b"
           bgClass="rgba(245, 158, 11, 0.1)"
         />
@@ -352,7 +462,7 @@ export default function FinancePage() {
                   borderColor: 'var(--card-border)',
                   color: 'var(--text-primary)',
                 }}
-                />
+              />
             </div>
           </div>
           <button
@@ -451,7 +561,7 @@ export default function FinancePage() {
             />
           </div>
         )}
-                                    </div>
+      </div>
 
       {/* Transactions Table */}
       <div
@@ -464,11 +574,11 @@ export default function FinancePage() {
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'var(--primary)' }}></div>
-                                    </div>
+          </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="p-12 text-center" style={{ color: 'var(--text-secondary)' }}>
             İşlem bulunamadı
-                                </div>
+          </div>
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -526,7 +636,7 @@ export default function FinancePage() {
                           }}
                         >
                           {transaction.type === 'GELIR' ? 'Gelir' : 'Gider'}
-                                </span>
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {getCategoryLabel(transaction.category)}
@@ -549,6 +659,7 @@ export default function FinancePage() {
                           <button
                             onClick={() => {
                               setEditingTransaction(transaction);
+                              setInitialValues(null);
                               setShowModal(true);
                             }}
                             className="p-2 rounded-lg transition-colors"
@@ -575,7 +686,7 @@ export default function FinancePage() {
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                            </div>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -588,7 +699,7 @@ export default function FinancePage() {
               <div className="p-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--card-border)' }}>
                 <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   Sayfa {page} / {totalPages}
-                    </div>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -623,13 +734,16 @@ export default function FinancePage() {
       {showModal && (
         <FinancialTransactionModal
           transaction={editingTransaction}
+          initialValues={initialValues}
           onClose={() => {
             setShowModal(false);
             setEditingTransaction(null);
+            setInitialValues(null);
           }}
           onSuccess={() => {
             setShowModal(false);
             setEditingTransaction(null);
+            setInitialValues(null);
             fetchTransactions();
           }}
         />
@@ -641,10 +755,12 @@ export default function FinancePage() {
 // Financial Transaction Modal Component
 function FinancialTransactionModal({
   transaction,
+  initialValues,
   onClose,
   onSuccess,
 }: {
   transaction: FinancialTransaction | null;
+  initialValues: { type: 'GELIR' | 'GIDER'; category: string; description: string; template?: string } | null;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -656,6 +772,7 @@ function FinancialTransactionModal({
     date: new Date().toISOString().split('T')[0],
     notes: '',
   });
+  const [template, setTemplate] = useState('CUSTOM');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -670,6 +787,7 @@ function FinancialTransactionModal({
           date: format(transactionDate, 'yyyy-MM-dd'),
           notes: transaction.notes || '',
         });
+        setTemplate('CUSTOM');
       } catch (error) {
         console.error('Date format error:', error);
         setFormData({
@@ -680,7 +798,18 @@ function FinancialTransactionModal({
           date: new Date().toISOString().split('T')[0],
           notes: transaction.notes || '',
         });
+        setTemplate('CUSTOM');
       }
+    } else if (initialValues) {
+      setFormData({
+        type: initialValues.type,
+        category: initialValues.category,
+        description: initialValues.description,
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        notes: '',
+      });
+      setTemplate(initialValues.template || 'CUSTOM');
     } else {
       setFormData({
         type: 'GELIR',
@@ -690,8 +819,48 @@ function FinancialTransactionModal({
         date: new Date().toISOString().split('T')[0],
         notes: '',
       });
+      setTemplate('CUSTOM');
     }
-  }, [transaction]);
+  }, [transaction, initialValues]);
+
+  const handleTemplateChange = (newTemplate: string) => {
+    setTemplate(newTemplate);
+
+    const defaults: any = {
+      INCOMING_TRANSFER: {
+        type: 'GELIR',
+        category: 'DİĞER',
+        description: 'Gelen Havale - ',
+      },
+      PAYMENT: {
+        type: 'GIDER',
+        category: 'TEDARIKCI_ODEMESI',
+        description: 'Ödeme - ',
+      },
+      SUPPLIER_INVOICE: {
+        type: 'GIDER',
+        category: 'TEDARIKCI_ODEMESI',
+        description: 'Fatura - ',
+      },
+      EXPENSE_INVOICE: {
+        type: 'GIDER',
+        category: 'OFIS_GIDERLERI',
+        description: 'Gider - ',
+      },
+    };
+
+    if (defaults[newTemplate]) {
+      setFormData(prev => ({
+        ...prev,
+        ...defaults[newTemplate],
+      }));
+    } else if (newTemplate === 'CUSTOM') {
+      // Keep current values but ensure they are valid
+      if (!formData.type) {
+        setFormData(prev => ({ ...prev, type: 'GELIR', category: 'KONAKLAMA' }));
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -746,9 +915,42 @@ function FinancialTransactionModal({
           >
             <X className="w-5 h-5" />
           </button>
-                </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {!transaction && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+                İşlem Türü
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'CUSTOM', label: 'Serbest', icon: Edit },
+                  { id: 'INCOMING_TRANSFER', label: 'Gelen Havale', icon: TrendingUp },
+                  { id: 'PAYMENT', label: 'Ödeme', icon: CreditCard },
+                  { id: 'SUPPLIER_INVOICE', label: 'Gelen Fatura', icon: FileText },
+                  { id: 'EXPENSE_INVOICE', label: 'Gider Faturası', icon: DollarSign },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleTemplateChange(item.id)}
+                    className={`p-3 rounded-xl border text-sm font-medium flex flex-col items-center justify-center gap-2 transition-all ${template === item.id ? 'ring-2 ring-blue-500 border-blue-500' : 'hover:bg-gray-50'
+                      }`}
+                    style={{
+                      backgroundColor: template === item.id ? 'rgba(59, 130, 246, 0.1)' : 'var(--card)',
+                      borderColor: template === item.id ? '#3b82f6' : 'var(--card-border)',
+                      color: template === item.id ? '#3b82f6' : 'var(--text-secondary)',
+                    }}
+                  >
+                    <item.icon className={`w-5 h-5 ${template === item.id ? 'text-blue-500' : 'text-gray-400'}`} />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -756,34 +958,44 @@ function FinancialTransactionModal({
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'GELIR' | 'GIDER' })}
+                onChange={(e) => {
+                  setFormData({ ...formData, type: e.target.value as 'GELIR' | 'GIDER' });
+                  setTemplate('CUSTOM');
+                }}
                 className="w-full px-4 py-2 rounded-lg border transition-colors"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--card-border)',
                   color: 'var(--text-primary)',
+                  opacity: template !== 'CUSTOM' ? 0.7 : 1,
                 }}
                 required
+                disabled={template !== 'CUSTOM'}
               >
                 <option value="GELIR">Gelir</option>
                 <option value="GIDER">Gider</option>
               </select>
-                                    </div>
+            </div>
 
-                                    <div>
+            <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 Kategori *
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, category: e.target.value });
+                  setTemplate('CUSTOM');
+                }}
                 className="w-full px-4 py-2 rounded-lg border transition-colors"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--card-border)',
                   color: 'var(--text-primary)',
+                  opacity: template !== 'CUSTOM' ? 0.7 : 1,
                 }}
                 required
+                disabled={template !== 'CUSTOM'}
               >
                 <option value="KONAKLAMA">Konaklama</option>
                 <option value="TRANSFER">Transfer</option>
@@ -793,8 +1005,8 @@ function FinancialTransactionModal({
                 <option value="VERGI">Vergi</option>
                 <option value="DİĞER">Diğer</option>
               </select>
-                                    </div>
-                                </div>
+            </div>
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -812,7 +1024,7 @@ function FinancialTransactionModal({
               }}
               required
             />
-                            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -833,7 +1045,7 @@ function FinancialTransactionModal({
                 }}
                 required
               />
-                    </div>
+            </div>
 
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -893,7 +1105,7 @@ function FinancialTransactionModal({
             </button>
           </div>
         </form>
-            </div>
-        </div>
-    );
+      </div>
+    </div>
+  );
 }
