@@ -1868,11 +1868,11 @@ export default function AccommodationTableSection({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Giriş Tarihi</label>
-                  <input type="date" name="girisTarihi" value={editingRecord.girisTarihi ? new Date(editingRecord.girisTarihi).toISOString().split('T')[0] : ''} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" required />
+                  <input type="date" name="girisTarihi" value={editingRecord.girisTarihi ? (() => { const d = new Date(editingRecord.girisTarihi); return !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : ''; })() : ''} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" required />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Çıkış Tarihi</label>
-                  <input type="date" name="cikisTarihi" value={editingRecord.cikisTarihi ? new Date(editingRecord.cikisTarihi).toISOString().split('T')[0] : ''} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" required />
+                  <input type="date" name="cikisTarihi" value={editingRecord.cikisTarihi ? (() => { const d = new Date(editingRecord.cikisTarihi); return !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : ''; })() : ''} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" required />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Oda Tipi</label>
