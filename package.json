@@ -16,6 +16,9 @@
     "clear-demo": "node scripts/clearDemoData.js",
     "create-admin": "node scripts/createAdmin.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
