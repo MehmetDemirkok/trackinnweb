@@ -16,9 +16,6 @@
     "clear-demo": "node scripts/clearDemoData.js",
     "create-admin": "node scripts/createAdmin.js"
   },
-  "prisma": {
-    "seed": "node prisma/seed.js"
-  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -64,6 +61,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@faker-js/faker": "^9.8.0",
+    "@prisma/config": "^7.6.0",
     "@tailwindcss/postcss": "^4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
