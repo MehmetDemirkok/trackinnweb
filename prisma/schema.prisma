@@ -283,3 +283,9 @@ model FinancialTransaction {
   @@index([date])
   @@index([type])
 }
+
+model KeepAlive {
+  id        Int      @id @default(autoincrement())
+  pingAt    DateTime @default(now())
+  message   String   @default("keep-alive-ping")
+}
