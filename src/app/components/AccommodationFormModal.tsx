@@ -79,8 +79,8 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-      <div className="bg-[var(--card)] rounded-2xl shadow-2xl w-full max-w-4xl mx-4 p-6 relative animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm p-3 sm:p-4">
+      <div className="bg-[var(--card)] rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative animate-fade-in border border-[var(--card-border)]">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-2xl font-bold focus:outline-none z-10 transition-colors"
@@ -89,18 +89,18 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
           <X className="w-6 h-6" />
         </button>
         
-        <div className="bg-[var(--muted-background)] border-2 border-[var(--card-border)] rounded-lg p-4 mb-4" style={{
+        <div className="bg-[var(--muted-background)] border border-[var(--card-border)] rounded-xl p-3 sm:p-4 mb-1" style={{
             background: 'linear-gradient(to right, var(--muted-background), var(--card))'
         }}>
           <div className="flex items-center gap-2 mb-4">
             <Plus className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">Yeni Konaklama Kaydı</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">Yeni Konaklama Kaydı</h2>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-3">
               {/* Adı Soyadı */}
-              <div>
+              <div className="xl:col-span-3">
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Adı Soyadı *</label>
                 <input
                   type="text"
@@ -114,7 +114,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Unvanı */}
-              <div>
+              <div className="xl:col-span-3">
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Unvanı *</label>
                 <input
                   type="text"
@@ -128,7 +128,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Giriş Tarihi */}
-              <div>
+              <div className="xl:col-span-2">
                 <DatePickerWithQuickSelect
                   value={formData.girisTarihi}
                   onChange={(value) => {
@@ -144,7 +144,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Çıkış Tarihi */}
-              <div>
+              <div className="xl:col-span-2">
                 <DatePickerWithQuickSelect
                   value={formData.cikisTarihi}
                   onChange={(value) => {
@@ -159,40 +159,41 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
                 />
               </div>
 
-              {/* Oda Tipi */}
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Oda Tipi</label>
-                <select
-                  name="odaTipi"
-                  value={formData.odaTipi}
-                  onChange={onChange}
-                  className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="Single Oda">Single Oda</option>
-                  <option value="Double Oda">Double Oda</option>
-                  <option value="Twin Oda">Twin Oda</option>
-                  <option value="Suite">Suite</option>
-                </select>
-              </div>
+              {/* Oda Tipi + Konaklama Tipi */}
+              <div className="sm:col-span-2 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Oda Tipi</label>
+                  <select
+                    name="odaTipi"
+                    value={formData.odaTipi}
+                    onChange={onChange}
+                    className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="Single Oda">Single Oda</option>
+                    <option value="Double Oda">Double Oda</option>
+                    <option value="Twin Oda">Twin Oda</option>
+                    <option value="Suite">Suite</option>
+                  </select>
+                </div>
 
-              {/* Konaklama Tipi */}
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Konaklama Tipi</label>
-                <select
-                  name="konaklamaTipi"
-                  value={formData.konaklamaTipi}
-                  onChange={onChange}
-                  className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="BB">BB (Oda Kahvaltı)</option>
-                  <option value="HB">HB (Yarım Pansiyon)</option>
-                  <option value="FB">FB (Tam Pansiyon)</option>
-                  <option value="UHD">UHD (Her Şey Dahil)</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Konaklama Tipi</label>
+                  <select
+                    name="konaklamaTipi"
+                    value={formData.konaklamaTipi}
+                    onChange={onChange}
+                    className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="BB">BB (Oda Kahvaltı)</option>
+                    <option value="HB">HB (Yarım Pansiyon)</option>
+                    <option value="FB">FB (Tam Pansiyon)</option>
+                    <option value="UHD">UHD (Her Şey Dahil)</option>
+                  </select>
+                </div>
               </div>
 
               {/* Gecelik Ücret */}
-              <div>
+              <div className="xl:col-span-2">
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Gecelik Ücret *</label>
                 <input
                   type="number"
@@ -208,7 +209,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Toplam Ücret (Otomatik) */}
-              <div>
+              <div className="xl:col-span-2">
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Toplam Ücret</label>
                 <input
                   type="text"
@@ -225,7 +226,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Otel Adı */}
-              <div>
+              <div className="xl:col-span-3">
                 <AutocompleteInput
                   value={formData.otelAdi}
                   onChange={(value) => {
@@ -243,7 +244,7 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Cari */}
-              <div>
+              <div className="xl:col-span-3">
                 <AutocompleteInput
                   value={formData.kurumCari || ''}
                   onChange={(value) => {
@@ -260,11 +261,11 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
               </div>
 
               {/* Kaydet Butonu */}
-              <div className="flex items-end">
+              <div className="sm:col-span-2 xl:col-span-2 flex items-end">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-[42px] px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>

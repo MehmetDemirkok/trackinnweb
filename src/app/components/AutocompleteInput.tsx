@@ -118,7 +118,7 @@ export default function AutocompleteInput({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           required={required}
-          className={`w-full px-3 py-2 pr-20 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder:text-[var(--text-muted)] ${className}`}
+          className={`w-full px-3 py-2 pr-14 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder:text-[var(--text-muted)] ${className}`}
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
           {value && (
