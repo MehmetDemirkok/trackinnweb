@@ -76,6 +76,19 @@ export default function CompaniesPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const getErrorMessage = async (response: Response, fallback: string) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await response.json().catch(() => null);
+      if (data?.error && typeof data.error === 'string') return data.error;
+      if (data?.message && typeof data.message === 'string') return data.message;
+    } else {
+      const text = await response.text().catch(() => '');
+      if (text) return text;
+    }
+    return fallback;
+  };
+
   useEffect(() => {
     fetchCompanies();
   }, []);
@@ -138,8 +151,8 @@ export default function CompaniesPage() {
         setShowAddModal(false);
         resetForm();
       } else {
-        const error = await response.json();
-        alert(error.error || 'Şirket oluşturulurken hata oluştu');
+        const errorMessage = await getErrorMessage(response, 'Şirket oluşturulurken hata oluştu');
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Şirket oluşturma hatası:', error);
@@ -170,8 +183,8 @@ export default function CompaniesPage() {
         setEditingCompany(null);
         resetForm();
       } else {
-        const error = await response.json();
-        alert(error.error || 'Şirket güncellenirken hata oluştu');
+        const errorMessage = await getErrorMessage(response, 'Şirket güncellenirken hata oluştu');
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Şirket güncelleme hatası:', error);
@@ -195,8 +208,8 @@ export default function CompaniesPage() {
       if (response.ok) {
         await fetchCompanies();
       } else {
-        const error = await response.json();
-        alert(error.error || 'Şirket silinirken hata oluştu');
+        const errorMessage = await getErrorMessage(response, 'Şirket silinirken hata oluştu');
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Şirket silme hatası:', error);
