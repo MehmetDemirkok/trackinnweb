@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
                     cikisTarihi: accommodation.cikisTarihi,
                     odaTipi: accommodation.odaTipi,
                     konaklamaTipi: accommodation.konaklamaTipi,
+                    projeAdi: accommodation.projeAdi,
                     otelAdi: accommodation.otelAdi,
                     alisFiyati: accommodation.gecelikUcret,
                     toplamAlisFiyati: accommodation.toplamUcret,

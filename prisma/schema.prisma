@@ -92,6 +92,7 @@ model Accommodation {
   gecelikUcret    Float
   toplamUcret     Float
   organizasyonAdi String?
+  projeAdi        String?
   otelAdi         String?
   kurumCari       String?
   numberOfNights  Int?
@@ -121,6 +122,7 @@ model AccommodationSale {
   cikisTarihi       String
   odaTipi           String
   konaklamaTipi     String
+  projeAdi          String?
   otelAdi           String?
   alisFiyati        Float
   toplamAlisFiyati  Float

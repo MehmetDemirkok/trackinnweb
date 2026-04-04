@@ -12,7 +12,8 @@ import {
   Users,
   FileText,
   CreditCard,
-  Receipt
+  Receipt,
+  Briefcase
 } from 'lucide-react';
 
 interface AccommodationSale {
@@ -26,6 +27,7 @@ interface AccommodationSale {
   cikisTarihi: string;
   odaTipi: string;
   konaklamaTipi: string;
+  projeAdi?: string;
   otelAdi?: string;
   alisFiyati: number;
   toplamAlisFiyati: number;
@@ -46,7 +48,7 @@ interface AccommodationSale {
 interface FolderNode {
   id: string;
   name: string;
-  type: 'root' | 'hotel' | 'customer' | 'date' | 'payment' | 'invoice';
+  type: 'root' | 'hotel' | 'customer' | 'date' | 'payment' | 'invoice' | 'project';
   icon?: React.ReactNode;
   count: number;
   totalRevenue: number;
@@ -60,7 +62,7 @@ interface SalesFolderTreeProps {
   records: AccommodationSale[];
   onFolderSelect: (folder: FolderNode) => void;
   selectedFolderId?: string;
-  viewMode?: 'hotel' | 'customer' | 'date' | 'payment' | 'invoice' | 'combined';
+  viewMode?: 'hotel' | 'customer' | 'date' | 'payment' | 'invoice' | 'combined' | 'project';
 }
 
 export default function SalesFolderTree({
@@ -92,6 +94,47 @@ export default function SalesFolderTree({
       children: [],
       records: records
     };
+
+    if (mode === 'project' || mode === 'combined') {
+      // Proje bazlı klasörleme
+      const projectMap = new Map<string, AccommodationSale[]>();
+
+      records.forEach(record => {
+        const projectName = record.projeAdi || 'Proje Belirtilmemiş';
+        if (!projectMap.has(projectName)) {
+          projectMap.set(projectName, []);
+        }
+        projectMap.get(projectName)!.push(record);
+      });
+
+      const projectFolders: FolderNode[] = [];
+      
+      projectMap.forEach((projectRecords, projectName) => {
+        projectFolders.push({
+          id: `project-${projectName}`,
+          name: projectName,
+          type: 'project',
+          icon: <Briefcase className="w-4 h-4" />,
+          count: projectRecords.length,
+          totalRevenue: projectRecords.reduce((sum, r) => sum + (r.toplamSatisFiyati || 0), 0),
+          totalProfit: projectRecords.reduce((sum, r) => sum + (r.kar || 0), 0),
+          records: projectRecords
+        });
+      });
+
+      if (projectFolders.length > 0) {
+        root.children!.push({
+          id: 'by-project',
+          name: 'Projelere Göre',
+          type: 'root',
+          icon: <Briefcase className="w-4 h-4" />,
+          count: records.length,
+          totalRevenue: root.totalRevenue,
+          totalProfit: root.totalProfit,
+          children: projectFolders.sort((a, b) => b.count - a.count)
+        });
+      }
+    }
 
     if (mode === 'hotel' || mode === 'combined') {
       // Otel bazlı klasörleme

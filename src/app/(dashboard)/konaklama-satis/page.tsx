@@ -29,6 +29,7 @@ interface AccommodationSale {
   cikisTarihi: string;
   odaTipi: string;
   konaklamaTipi: string;
+  projeAdi?: string;
   otelAdi?: string;
   alisFiyati: number;
   toplamAlisFiyati: number;
@@ -921,6 +922,11 @@ export default function AccommodationSalesPage() {
                       </td>
                       <td className="px-2 py-2">
                         <div className="text-xs font-medium text-gray-900 truncate">{sale.otelAdi || '—'}</div>
+                        {sale.projeAdi && (
+                          <div className="text-[10px] text-purple-600 truncate font-semibold mt-0.5">
+                            Proje: {sale.projeAdi}
+                          </div>
+                        )}
                         <div className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">Satış müşterisi</div>
                         <div
                           className={`text-[11px] truncate leading-tight ${

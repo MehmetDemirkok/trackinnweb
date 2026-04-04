@@ -10,14 +10,15 @@ import {
   Calendar,
   Hotel,
   Users,
-  FileText
+  FileText,
+  Briefcase
 } from 'lucide-react';
 import { AccommodationRecord } from './AccommodationTableSection';
 
 interface FolderNode {
   id: string;
   name: string;
-  type: 'root' | 'organization' | 'hotel' | 'date' | 'munferit';
+  type: 'root' | 'organization' | 'hotel' | 'date' | 'munferit' | 'project';
   icon?: React.ReactNode;
   count: number;
   totalCost: number;
@@ -30,7 +31,7 @@ interface AccommodationFolderTreeProps {
   records: AccommodationRecord[];
   onFolderSelect: (folder: FolderNode) => void;
   selectedFolderId?: string;
-  viewMode?: 'organization' | 'hotel' | 'date' | 'combined';
+  viewMode?: 'organization' | 'hotel' | 'date' | 'combined' | 'project';
 }
 
 export default function AccommodationFolderTree({
@@ -116,6 +117,45 @@ export default function AccommodationFolderTree({
           count: records.length,
           totalCost: root.totalCost,
           children: orgFolders.sort((a, b) => b.count - a.count)
+        });
+      }
+    }
+
+    if (mode === 'project' || mode === 'combined') {
+      // Proje bazlı klasörleme
+      const projectMap = new Map<string, AccommodationRecord[]>();
+
+      records.forEach(record => {
+        const projectName = record.projeAdi || 'Proje Belirtilmemiş';
+        if (!projectMap.has(projectName)) {
+          projectMap.set(projectName, []);
+        }
+        projectMap.get(projectName)!.push(record);
+      });
+
+      const projectFolders: FolderNode[] = [];
+      
+      projectMap.forEach((projectRecords, projectName) => {
+        projectFolders.push({
+          id: `project-${projectName}`,
+          name: projectName,
+          type: 'project',
+          icon: <Briefcase className="w-4 h-4" />,
+          count: projectRecords.length,
+          totalCost: projectRecords.reduce((sum, r) => sum + (r.toplamUcret || 0), 0),
+          records: projectRecords
+        });
+      });
+
+      if (projectFolders.length > 0) {
+        root.children!.push({
+          id: 'by-project',
+          name: 'Projelere Göre',
+          type: 'root',
+          icon: <Briefcase className="w-4 h-4" />,
+          count: records.length,
+          totalCost: root.totalCost,
+          children: projectFolders.sort((a, b) => b.count - a.count)
         });
       }
     }

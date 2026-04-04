@@ -28,6 +28,7 @@ export interface AccommodationRecord {
     status: string;
   };
   otelAdi?: string;
+  projeAdi?: string;
   kurumCari?: string;
   numberOfNights?: number;
   isMunferit?: boolean;
@@ -91,6 +92,7 @@ export default function AccommodationTableSection({
     gecelikUcret: 0,
     toplamUcret: 0,
     otelAdi: '',
+    projeAdi: '',
     kurumCari: '',
     numberOfNights: 0,
   });
@@ -421,6 +423,7 @@ export default function AccommodationTableSection({
       gecelikUcret: 0,
       toplamUcret: 0,
       otelAdi: '',
+      projeAdi: '',
       kurumCari: '',
       numberOfNights: 0,
     });
@@ -439,6 +442,7 @@ export default function AccommodationTableSection({
       gecelikUcret: 0,
       toplamUcret: 0,
       otelAdi: '',
+      projeAdi: '',
       kurumCari: '',
       numberOfNights: 0,
     });
@@ -1590,6 +1594,11 @@ export default function AccommodationTableSection({
                             {record.organization?.name || record.organizasyonAdi}
                           </div>
                         )}
+                        {record.projeAdi && (
+                          <div className="text-[10px] text-purple-600 truncate font-semibold">
+                            Proje: {record.projeAdi}
+                          </div>
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         <div className="text-[11px]">
@@ -1851,6 +1860,10 @@ export default function AccommodationTableSection({
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Unvanı</label>
                   <input type="text" name="unvani" value={editingRecord.unvani} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Proje Adı</label>
+                  <input type="text" name="projeAdi" value={editingRecord.projeAdi || ''} onChange={handleEditInputChange} className="mt-1 block w-full border rounded-md shadow-sm p-2" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Giriş Tarihi</label>

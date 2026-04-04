@@ -18,6 +18,7 @@ interface AccommodationFormModalProps {
     gecelikUcret: number | string;
     toplamUcret: number;
     otelAdi: string;
+    projeAdi?: string;
     kurumCari?: string;
     numberOfNights: number;
   };
@@ -240,6 +241,19 @@ const AccommodationFormModal: React.FC<AccommodationFormModalProps> = ({
                   label="Otel Adı"
                   required
                   name="otelAdi"
+                />
+              </div>
+
+              {/* Proje Adı */}
+              <div className="xl:col-span-3">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Proje Adı</label>
+                <input
+                  type="text"
+                  name="projeAdi"
+                  value={formData.projeAdi || ''}
+                  onChange={onChange}
+                  placeholder="Proje Adı"
+                  className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder:text-[var(--text-muted)]"
                 />
               </div>
 
