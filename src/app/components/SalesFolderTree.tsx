@@ -139,7 +139,7 @@ export default function SalesFolderTree({
       const customerMap = new Map<string, AccommodationSale[]>();
 
       records.forEach(record => {
-        const customerName = record.musteriAdi || 'Müşteri Belirtilmemiş';
+        const customerName = record.musteriAdi || 'Satış müşterisi belirtilmemiş';
         if (!customerMap.has(customerName)) {
           customerMap.set(customerName, []);
         }

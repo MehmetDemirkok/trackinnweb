@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AccommodationTableSection from '@/app/components/AccommodationTableSection';
 import AccommodationFolderTree from '@/app/components/AccommodationFolderTree';
@@ -58,17 +58,19 @@ export default function KonaklamaAlisPage() {
     // Fetch accommodation purchase statistics
     const fetchStats = async () => {
       try {
-        const res = await fetch('/api/accommodation?isMunferit=false');
+        const [res, salesRes] = await Promise.all([
+          fetch('/api/accommodation?isMunferit=false'),
+          fetch('/api/accommodation-sales'),
+        ]);
+
         if (res.ok) {
           const data = await res.json();
           const accommodations = Array.isArray(data) ? data : (data.accommodations || []);
 
-          // Satışa aktarılan kayıtları kontrol et
-          const salesRes = await fetch('/api/accommodation-sales');
           if (salesRes.ok) {
             const salesData = await salesRes.json();
             const sales = salesData.sales || [];
-            const transferredIds = new Set<number>(sales.map((sale: any) => sale.accommodationId));
+            const transferredIds = new Set<number>(sales.map((sale: { accommodationId: number }) => sale.accommodationId));
             setTransferredRecordIds(transferredIds);
           }
 
@@ -128,9 +130,17 @@ export default function KonaklamaAlisPage() {
     setShowSalesPriceModal(true);
   };
 
-  const handleSalesPriceConfirm = async (prices: Record<number, { satisFiyati: number; toplamSatisFiyati: number }>) => {
+  const salesModalRecords = useMemo(
+    () => allRecords.filter((record) => pendingTransferIds.includes(record.id)),
+    [allRecords, pendingTransferIds.join(',')]
+  );
+
+  const handleSalesPriceConfirm = async (payload: {
+    prices: Record<number, { satisFiyati: number; toplamSatisFiyati: number }>;
+    customers: Record<number, { musteriAdi: string; musteriCariKodu: string }>;
+  }) => {
     try {
-      const result = await transferToSales(pendingTransferIds, prices);
+      const result = await transferToSales(pendingTransferIds, payload.prices, payload.customers);
 
       // Başarılı aktarılan kayıtları işaretle
       const newTransferredIds = new Set(transferredRecordIds);
@@ -558,7 +568,7 @@ export default function KonaklamaAlisPage() {
           {showSalesPriceModal && (
             <SalesPriceModal
               isOpen={showSalesPriceModal}
-              records={allRecords.filter(record => pendingTransferIds.includes(record.id))}
+              records={salesModalRecords}
               onClose={() => {
                 setShowSalesPriceModal(false);
                 setPendingTransferIds([]);

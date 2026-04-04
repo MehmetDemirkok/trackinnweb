@@ -4,18 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { User, LogOut, Settings, Building, ChevronDown, Sun, Moon } from 'lucide-react';
-
-interface UserData {
-  id: number;
-  email: string;
-  name?: string;
-  role: string;
-  companyId?: number;
-  companyName?: string;
-}
+import { useDashboardUser } from '@/contexts/DashboardUserContext';
 
 export default function UserHeader() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const { user } = useDashboardUser();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -23,22 +15,6 @@ export default function UserHeader() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/user', { credentials: 'include' });
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
-      } catch (error) {
-        console.error('Kullanıcı bilgileri alınamadı:', error);
-      }
-    };
-
-    fetchUser();
   }, []);
 
   const handleLogout = async () => {

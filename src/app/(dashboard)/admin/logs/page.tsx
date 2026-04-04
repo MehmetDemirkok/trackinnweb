@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import AuthGuard from "@/components/layout/AuthGuard";
 
 interface Log {
   id: number;

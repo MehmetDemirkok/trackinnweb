@@ -1,6 +1,12 @@
+export type SaleCustomerInput = {
+  musteriAdi: string;
+  musteriCariKodu?: string;
+};
+
 export const transferToSales = async (
   accommodationIds: number[],
-  salePrices?: Record<number, { satisFiyati: number; toplamSatisFiyati: number }>
+  salePrices?: Record<number, { satisFiyati: number; toplamSatisFiyati: number }>,
+  saleCustomers?: Record<number, SaleCustomerInput>
 ) => {
   try {
     const res = await fetch('/api/accommodation-sales', {
@@ -11,7 +17,8 @@ export const transferToSales = async (
       credentials: 'include', // Cookie'leri göndermek için gerekli
       body: JSON.stringify({ 
         accommodationIds,
-        salePrices: salePrices || {}
+        salePrices: salePrices || {},
+        saleCustomers: saleCustomers || {},
       })
     });
 

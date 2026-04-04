@@ -1,60 +1,27 @@
 "use client";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
+import { useDashboardUser } from "@/contexts/DashboardUserContext";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useDashboardUser();
 
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch("/api/user", { credentials: "include" });
-        if (res.status === 401) {
-          // localStorage ile alert'in gösterilip gösterilmediğini kontrol et
-          const sessionExpiredAlertShown = localStorage.getItem('sessionExpiredAlertShown');
+  if (loading) {
+    return (
+      <div
+        className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--background)]"
+        aria-busy="true"
+        aria-label="Oturum doğrulanıyor"
+      >
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <p className="text-sm text-gray-500">Oturum doğrulanıyor…</p>
+      </div>
+    );
+  }
 
-          if (!sessionExpiredAlertShown) {
-            // Alert'i göster ve localStorage'a kaydet
-            localStorage.setItem('sessionExpiredAlertShown', 'true');
-            alert("Oturumunuz sona erdi, lütfen tekrar giriş yapın.");
-          }
+  if (!user) {
+    return null;
+  }
 
-          // Login sayfasına yönlendir
-          router.replace("/login");
-          // Loading state'ini false yapmıyoruz, böylece içerik render edilmiyor
-        } else if (res.status === 200) {
-          // Kullanıcı başarıyla giriş yaptıysa localStorage'ı temizle
-          localStorage.removeItem('sessionExpiredAlertShown');
-
-          if (process.env.NODE_ENV === "development") {
-            console.log("Kullanıcı doğrulandı, cookie mevcut.");
-          }
-          setLoading(false);
-        } else {
-          // Diğer durumlar için de login'e yönlendir
-          router.replace("/login");
-        }
-      } catch (err) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Auth kontrolünde hata:", err);
-        }
-        // Hata durumunda da aynı mantığı uygula
-        const sessionExpiredAlertShown = localStorage.getItem('sessionExpiredAlertShown');
-
-        if (!sessionExpiredAlertShown) {
-          localStorage.setItem('sessionExpiredAlertShown', 'true');
-          alert("Oturumunuz sona erdi, lütfen tekrar giriş yapın.");
-        }
-
-        router.replace("/login");
-      }
-    }
-    checkAuth();
-  }, [pathname, router]);
-
-  if (loading) return null;
   return <>{children}</>;
 }
 

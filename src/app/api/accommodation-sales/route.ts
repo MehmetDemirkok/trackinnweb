@@ -78,6 +78,11 @@ export async function POST(request: NextRequest) {
       }
 
       try {
+        const saleCustomersPayload =
+          data.saleCustomers && typeof data.saleCustomers === 'object' && !Array.isArray(data.saleCustomers)
+            ? (data.saleCustomers as Record<string, { musteriAdi?: string; musteriCariKodu?: string }>)
+            : {};
+
         const result = await prisma.$transaction(
           async (tx) => {
             const sales = [];
@@ -123,6 +128,15 @@ export async function POST(request: NextRequest) {
                   ? (kar / accommodation.toplamUcret) * 100 
                   : 0;
 
+                const custRaw =
+                  saleCustomersPayload[accommodation.id] ?? saleCustomersPayload[String(accommodation.id)];
+                const musteriAdiTrim = custRaw?.musteriAdi?.trim();
+                const musteriCariTrim = custRaw?.musteriCariKodu?.trim();
+                const musteriAdi =
+                  musteriAdiTrim ||
+                  (accommodation.kurumCari?.trim() ? accommodation.kurumCari.trim() : null);
+                const musteriCariKodu = musteriCariTrim || null;
+
                 // Satış kaydı oluştur
                 const sale = await tx.accommodationSale.create({
                   data: {
@@ -143,6 +157,8 @@ export async function POST(request: NextRequest) {
                     kar: kar,
                     karOrani: karOrani,
                     kalanTutar: toplamSatisFiyati,
+                    musteriAdi,
+                    musteriCariKodu,
                     companyId: user.companyId,
                   },
                 });

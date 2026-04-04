@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt, { JwtPayload, JsonWebTokenError } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
-import bcrypt from 'bcryptjs';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
@@ -104,8 +103,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
     
-    // Şifreyi hash'le
+    // Şifreyi hash'le (GET rotasından ayrı yükleme — oturum doğrulama daha hızlı)
     if (data.password) {
+      const bcrypt = (await import('bcryptjs')).default;
       data.password = await bcrypt.hash(data.password, 10);
     }
     

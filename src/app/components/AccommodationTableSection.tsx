@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import * as XLSX from 'xlsx';
 import BulkActionsMenu from "./BulkActionsMenu";
 import AccommodationFormModal from "./AccommodationFormModal";
 import AdvancedFilters, { FilterState } from "./AdvancedFilters";
 import Pagination from "./Pagination";
 import PaymentModal from "@/components/payment/PaymentModal";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { robotoBase64 } from '@/lib/fonts/roboto';
+import { useDashboardUser } from "@/contexts/DashboardUserContext";
 
 export interface AccommodationRecord {
   id: number;
@@ -39,13 +36,6 @@ export interface AccommodationRecord {
   updatedAt?: string;
 }
 
-interface User {
-  id: number;
-  email: string;
-  name?: string;
-  role: 'ADMIN' | 'SIRKET_YONETICISI';
-}
-
 interface AccommodationTableSectionProps {
   handlePuantajRaporu?: () => void;
   filterType?: 'all' | 'munferit' | 'organization';
@@ -68,7 +58,7 @@ export default function AccommodationTableSection({
   transferredRecordIds = new Set()
 }: AccommodationTableSectionProps) {
   const [records, setRecords] = useState<AccommodationRecord[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user: currentUser, loading: userLoading } = useDashboardUser();
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -132,22 +122,6 @@ export default function AccommodationTableSection({
   const canEdit = () => hasRole('KULLANICI');
   const canDelete = () => hasRole('MUDUR');
 
-  // useEffect ve API çağrıları
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await fetch('/api/user', { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-        }
-      } catch (error) {
-        //
-      }
-    }
-    fetchUser();
-  }, []);
-
   // Handle actions from props
   useEffect(() => {
     if (action === 'add') {
@@ -168,8 +142,13 @@ export default function AccommodationTableSection({
       return;
     }
 
+    if (userLoading) return;
+
     // Normal fetch işlemi
-    if (!currentUser) return;
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
 
     const fetchRecords = () => {
       let url = '/api/accommodation';
@@ -244,10 +223,10 @@ export default function AccommodationTableSection({
     fetchCariler();
 
     // filteredRecords değiştiğinde kayıtları güncelle
-  }, [currentUser, action, filterType, organizationId, filteredRecords]);
+  }, [currentUser, userLoading, action, filterType, organizationId, filteredRecords]);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || userLoading) return;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && filteredRecords === undefined) {
@@ -280,7 +259,7 @@ export default function AccommodationTableSection({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [currentUser, action, filterType, organizationId]);
+  }, [currentUser, userLoading, action, filterType, organizationId]);
 
   // Seçim değiştiğinde parent'ı bilgilendir
   useEffect(() => {
@@ -805,6 +784,7 @@ export default function AccommodationTableSection({
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
+        const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
@@ -1151,11 +1131,17 @@ export default function AccommodationTableSection({
     setShowExportFilterModal(false);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (selectedColumns.length === 0) {
       alert('En az bir sütun seçilmelidir!');
       return;
     }
+
+    const [{ default: jsPDF }, { default: autoTable }, { robotoBase64 }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+      import('@/lib/fonts/roboto'),
+    ]);
 
     const doc = new jsPDF({
       orientation: 'landscape', // Yatay yönlendirme daha geniş tablo için

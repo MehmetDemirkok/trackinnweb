@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import UserHeader from '@/components/layout/UserHeader';
 import AuthGuard from '@/components/layout/AuthGuard';
+import { DashboardUserProvider, useDashboardUser } from '@/contexts/DashboardUserContext';
 
 import {
   Home,
   BedDouble,
   Banknote,
   Building2,
-  Users,
-  UserCircle,
-  Truck,
   PieChart,
   Shield,
   X,
@@ -21,7 +19,7 @@ import {
   Activity
 } from 'lucide-react';
 
-export default function DashboardLayout({
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -51,64 +49,52 @@ export default function DashboardLayout({
     localStorage.setItem('sidebarCollapsed', String(newState));
   };
 
-  const [currentUser, setCurrentUser] = useState<{ role: string } | null>(null);
+  const { user: currentUser } = useDashboardUser();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch('/api/user');
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
+  const menuItems = useMemo(() => {
+    const items = [
+      {
+        name: 'Ana Dashboard',
+        path: '/dashboard',
+        icon: <Home className="w-5 h-5" />,
+      },
+      {
+        name: 'Konaklama Alış',
+        path: '/konaklama-alis',
+        icon: <BedDouble className="w-5 h-5" />,
+      },
+      {
+        name: 'Konaklama Satış',
+        path: '/konaklama-satis',
+        icon: <Banknote className="w-5 h-5" />,
+      },
+      {
+        name: 'Finans',
+        path: '/finans',
+        icon: <PieChart className="w-5 h-5" />,
+      },
+      {
+        name: 'Kullanıcı Yönetimi',
+        path: '/admin',
+        icon: <Shield className="w-5 h-5" />,
+      },
+    ];
+    if (currentUser?.role === 'ADMIN') {
+      items.push(
+        {
+          name: 'Şirket Yönetimi',
+          path: '/admin/companies',
+          icon: <Building2 className="w-5 h-5" />,
+        },
+        {
+          name: 'Sistem Logları',
+          path: '/admin/logs',
+          icon: <Activity className="w-5 h-5" />,
         }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const menuItems = [
-    {
-      name: 'Ana Dashboard',
-      path: '/dashboard',
-      icon: <Home className="w-5 h-5" />,
-    },
-    {
-      name: 'Konaklama Alış',
-      path: '/konaklama-alis',
-      icon: <BedDouble className="w-5 h-5" />,
-    },
-    {
-      name: 'Konaklama Satış',
-      path: '/konaklama-satis',
-      icon: <Banknote className="w-5 h-5" />,
-    },
-    {
-      name: 'Finans',
-      path: '/finans',
-      icon: <PieChart className="w-5 h-5" />,
-    },
-    {
-      name: 'Kullanıcı Yönetimi',
-      path: '/admin',
-      icon: <Shield className="w-5 h-5" />,
-    },
-  ];
-
-  if (currentUser?.role === 'ADMIN') {
-    menuItems.push({
-      name: 'Şirket Yönetimi',
-      path: '/admin/companies',
-      icon: <Building2 className="w-5 h-5" />,
-    });
-
-    menuItems.push({
-      name: 'Sistem Logları',
-      path: '/admin/logs',
-      icon: <Activity className="w-5 h-5" />,
-    });
-  }
+      );
+    }
+    return items;
+  }, [currentUser?.role]);
 
   return (
     <AuthGuard>
@@ -250,5 +236,13 @@ export default function DashboardLayout({
         </div>
       </div>
     </AuthGuard>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <DashboardUserProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </DashboardUserProvider>
   );
 }

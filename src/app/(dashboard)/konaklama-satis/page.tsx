@@ -10,7 +10,6 @@ import {
   AlertCircle,
   Edit,
   Trash2,
-  FileInput,
   FileOutput,
   Plus,
   CheckCircle,
@@ -18,10 +17,6 @@ import {
   Clock,
   FileSpreadsheet
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { robotoBase64 } from '@/lib/fonts/roboto';
 
 interface AccommodationSale {
   id: number;
@@ -302,7 +297,7 @@ export default function AccommodationSalesPage() {
         'Misafir',
         'Ünvan',
         'Otel',
-        'Müşteri',
+        'Satış müşterisi',
         'Alış Fiy.',
         'Satış Fiy.',
         'Kar',
@@ -452,7 +447,7 @@ export default function AccommodationSalesPage() {
     const worksheet = workbook.addWorksheet('Satışlar');
 
     // Başlık
-    worksheet.mergeCells('A1:O1');
+    worksheet.mergeCells('A1:P1');
     worksheet.getCell('A1').value = 'Konaklama Satış Listesi';
     worksheet.getCell('A1').font = { size: 16, bold: true, name: 'Arial' };
     worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
@@ -469,7 +464,8 @@ export default function AccommodationSalesPage() {
       'Satış Fiyatı',
       'Kar',
       'Kar Oranı',
-      'Müşteri',
+      'Satış müşterisi',
+      'Cari / referans',
       'Fatura',
       'Ödeme',
       'Ödenen',
@@ -506,6 +502,7 @@ export default function AccommodationSalesPage() {
         sale.kar,
         sale.karOrani,
         sale.musteriAdi || '-',
+        sale.musteriCariKodu || '-',
         sale.faturaDurumu,
         sale.odemeDurumu,
         sale.odenenTutar,
@@ -519,16 +516,16 @@ export default function AccommodationSalesPage() {
       row.getCell(7).numFmt = '#,##0.00 ₺';
       row.getCell(8).numFmt = '#,##0.00 ₺';
       row.getCell(9).numFmt = '0.00%';
-      row.getCell(13).numFmt = '#,##0.00 ₺';
       row.getCell(14).numFmt = '#,##0.00 ₺';
+      row.getCell(15).numFmt = '#,##0.00 ₺';
 
       // Hizalama
       row.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(8).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(9).alignment = { horizontal: 'right', vertical: 'middle' };
-      row.getCell(13).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(14).alignment = { horizontal: 'right', vertical: 'middle' };
+      row.getCell(15).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
       row.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
     });
@@ -543,11 +540,12 @@ export default function AccommodationSalesPage() {
     worksheet.getColumn(7).width = 15; // Satış Fiyatı
     worksheet.getColumn(8).width = 15; // Kar
     worksheet.getColumn(9).width = 12; // Kar Oranı
-    worksheet.getColumn(10).width = 20; // Müşteri
-    worksheet.getColumn(11).width = 15; // Fatura
-    worksheet.getColumn(12).width = 15; // Ödeme
-    worksheet.getColumn(13).width = 15; // Ödenen
-    worksheet.getColumn(14).width = 15; // Kalan
+    worksheet.getColumn(10).width = 22; // Satış müşterisi
+    worksheet.getColumn(11).width = 16; // Cari / referans
+    worksheet.getColumn(12).width = 15; // Fatura
+    worksheet.getColumn(13).width = 15; // Ödeme
+    worksheet.getColumn(14).width = 15; // Ödenen
+    worksheet.getColumn(15).width = 15; // Kalan
 
     // Border ekle
     worksheet.eachRow((row, rowNumber) => {
@@ -584,7 +582,13 @@ export default function AccommodationSalesPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    const [{ default: jsPDF }, { default: autoTable }, { robotoBase64 }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+      import('@/lib/fonts/roboto'),
+    ]);
+
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -623,6 +627,7 @@ export default function AccommodationSalesPage() {
 
     const tableData = filteredSales.map(sale => [
       sale.adiSoyadi || '-',
+      sale.musteriAdi || '—',
       sale.otelAdi || '-',
       `${parseFloat(sale.toplamAlisFiyati.toFixed(2)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`,
       `${parseFloat(sale.toplamSatisFiyati.toFixed(2)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`,
@@ -632,7 +637,7 @@ export default function AccommodationSalesPage() {
     ]);
 
     autoTable(doc, {
-      head: [['Misafir', 'Otel', 'Alış', 'Satış', 'Kar', 'Kar %', 'Ödeme']],
+      head: [['Misafir', 'Satış müşterisi', 'Otel', 'Alış', 'Satış', 'Kar', 'Kar %', 'Ödeme']],
       body: tableData,
       startY: 38,
       styles: {
@@ -862,8 +867,8 @@ export default function AccommodationSalesPage() {
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
                     Misafir
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                    Otel / Müşteri
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                    Otel / Satış müşterisi
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                     Tarihler
@@ -915,10 +920,19 @@ export default function AccommodationSalesPage() {
                         <div className="text-[11px] text-gray-500 truncate">{sale.unvani || '-'}</div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="text-xs font-medium text-gray-900 truncate">{sale.otelAdi || '-'}</div>
-                        {sale.musteriAdi && (
-                          <div className="text-[10px] text-blue-600 truncate">{sale.musteriAdi}</div>
-                        )}
+                        <div className="text-xs font-medium text-gray-900 truncate">{sale.otelAdi || '—'}</div>
+                        <div className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">Satış müşterisi</div>
+                        <div
+                          className={`text-[11px] truncate leading-tight ${
+                            sale.musteriAdi ? 'text-blue-700 font-medium' : 'text-amber-700'
+                          }`}
+                          title={sale.musteriAdi || 'Satışa aktarırken veya düzenle ekranından ekleyin'}
+                        >
+                          {sale.musteriAdi || 'Henüz girilmedi'}
+                        </div>
+                        {sale.musteriCariKodu ? (
+                          <div className="text-[9px] text-gray-500 truncate mt-0.5">Cari / ref: {sale.musteriCariKodu}</div>
+                        ) : null}
                       </td>
                       <td className="px-2 py-2">
                         <div className="text-[11px]">
@@ -1063,7 +1077,13 @@ export default function AccommodationSalesPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
               <h2 className="text-2xl font-bold text-gray-900">Satış Kaydını Düzenle</h2>
-              <p className="text-sm text-gray-500 mt-1">{editingSale.adiSoyadi} - {editingSale.otelAdi}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Konaklayan: {editingSale.adiSoyadi}
+                {editingSale.otelAdi ? ` · ${editingSale.otelAdi}` : ''}
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Satış müşterisi: {editingSale.musteriAdi || '—'} {editingSale.musteriCariKodu ? `(${editingSale.musteriCariKodu})` : ''}
+              </p>
             </div>
 
             <form
@@ -1148,19 +1168,20 @@ export default function AccommodationSalesPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Müşteri Adı
+                    Satış müşterisi (kime sattınız?)
                   </label>
                   <input
                     type="text"
                     name="musteriAdi"
                     defaultValue={editingSale.musteriAdi || ''}
+                    placeholder="Acenta, kurum veya son müşteri"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Müşteri Cari Kodu
+                    Cari kodu / referans
                   </label>
                   <input
                     type="text"
