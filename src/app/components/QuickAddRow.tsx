@@ -20,6 +20,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
         gecelikUcret: '',
         toplamUcret: '',
         otelAdi: '',
+        projeAdi: '',
         kurumCari: '',
         numberOfNights: 0,
     });
@@ -150,6 +151,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                     gecelikUcret: parseFloat(quickFormData.gecelikUcret),
                     toplamUcret: parseFloat(quickFormData.toplamUcret),
                     otelAdi: quickFormData.otelAdi,
+                    projeAdi: quickFormData.projeAdi || undefined,
                     kurumCari: quickFormData.kurumCari || undefined,
                     numberOfNights: quickFormData.numberOfNights,
                     ulke: 'Türkiye',
@@ -173,6 +175,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                     gecelikUcret: '',
                     toplamUcret: '',
                     otelAdi: '',
+                    projeAdi: '',
                     kurumCari: '',
                     numberOfNights: 0,
                 });
@@ -198,9 +201,9 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 <h3 className="font-semibold text-[var(--text-primary)]">Hızlı Kayıt Ekle</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-3">
                 {/* Adı Soyadı */}
-                <div>
+                <div className="xl:col-span-3">
                     <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Adı Soyadı *</label>
                     <input
                         type="text"
@@ -213,7 +216,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Unvanı */}
-                <div>
+                <div className="xl:col-span-3">
                     <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Unvanı *</label>
                     <input
                         type="text"
@@ -226,7 +229,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Giriş Tarihi */}
-                <div>
+                <div className="xl:col-span-2">
                     <DatePickerWithQuickSelect
                         value={quickFormData.girisTarihi}
                         onChange={(value) => {
@@ -239,7 +242,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Çıkış Tarihi */}
-                <div>
+                <div className="xl:col-span-2">
                     <DatePickerWithQuickSelect
                         value={quickFormData.cikisTarihi}
                         onChange={(value) => {
@@ -251,40 +254,41 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                     />
                 </div>
 
-                {/* Oda Tipi */}
-                <div>
-                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Oda Tipi</label>
-                    <select
-                        name="odaTipi"
-                        value={quickFormData.odaTipi}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                        <option value="Single Oda">Single Oda</option>
-                        <option value="Double Oda">Double Oda</option>
-                        <option value="Twin Oda">Twin Oda</option>
-                        <option value="Suite">Suite</option>
-                    </select>
-                </div>
+                {/* Oda Tipi + Konaklama Tipi */}
+                <div className="sm:col-span-2 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Oda Tipi</label>
+                        <select
+                            name="odaTipi"
+                            value={quickFormData.odaTipi}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        >
+                            <option value="Single Oda">Single Oda</option>
+                            <option value="Double Oda">Double Oda</option>
+                            <option value="Twin Oda">Twin Oda</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                    </div>
 
-                {/* Konaklama Tipi */}
-                <div>
-                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Konaklama Tipi</label>
-                    <select
-                        name="konaklamaTipi"
-                        value={quickFormData.konaklamaTipi}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                        <option value="BB">BB (Oda Kahvaltı)</option>
-                        <option value="HB">HB (Yarım Pansiyon)</option>
-                        <option value="FB">FB (Tam Pansiyon)</option>
-                        <option value="UHD">UHD (Her Şey Dahil)</option>
-                    </select>
+                    <div>
+                        <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Konaklama Tipi</label>
+                        <select
+                            name="konaklamaTipi"
+                            value={quickFormData.konaklamaTipi}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        >
+                            <option value="BB">BB (Oda Kahvaltı)</option>
+                            <option value="HB">HB (Yarım Pansiyon)</option>
+                            <option value="FB">FB (Tam Pansiyon)</option>
+                            <option value="UHD">UHD (Her Şey Dahil)</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Gecelik Ücret */}
-                <div>
+                <div className="xl:col-span-2">
                     <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Gecelik Ücret *</label>
                     <input
                         type="number"
@@ -299,7 +303,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Toplam Ücret (Otomatik) */}
-                <div>
+                <div className="xl:col-span-2">
                     <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Toplam Ücret</label>
                     <input
                         type="text"
@@ -316,7 +320,7 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Otel Adı */}
-                <div>
+                <div className="xl:col-span-3">
                     <AutocompleteInput
                         value={quickFormData.otelAdi}
                         onChange={(value) => setQuickFormData(prev => ({ ...prev, otelAdi: value }))}
@@ -328,8 +332,21 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                     />
                 </div>
 
+                {/* Proje Adı */}
+                <div className="xl:col-span-3">
+                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Proje Adı</label>
+                    <input
+                        type="text"
+                        name="projeAdi"
+                        value={quickFormData.projeAdi || ''}
+                        onChange={handleInputChange}
+                        placeholder="Proje Adı"
+                        className="w-full px-3 py-2 border border-[var(--card-border)] bg-[var(--card)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder:text-[var(--text-muted)]"
+                    />
+                </div>
+
                 {/* Cari */}
-                <div>
+                <div className="xl:col-span-3">
                     <AutocompleteInput
                         value={quickFormData.kurumCari}
                         onChange={(value) => setQuickFormData(prev => ({ ...prev, kurumCari: value }))}
@@ -341,10 +358,10 @@ export default function QuickAddRow({ onAddRecord }: QuickAddRowProps) {
                 </div>
 
                 {/* Kaydet Butonu */}
-                <div className="flex items-end">
+                <div className="sm:col-span-2 xl:col-span-2 flex items-end">
                     <button
                         onClick={handleQuickAdd}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                        className="w-full h-[42px] px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
                         Kayıt Oluştur
