@@ -5,16 +5,7 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    // Şirket bilgileri
     companyName: "",
-    companyEmail: "",
-    companyPhone: "",
-    companyAddress: "",
-    companyCity: "",
-    companyCountry: "Türkiye",
-    companyTaxNumber: "",
-    companyTaxOffice: "",
-    // Kullanıcı bilgileri
     name: "",
     email: "",
     password: "",
@@ -57,10 +48,6 @@ export default function RegisterPage() {
   const validateForm = () => {
     if (!formData.companyName.trim()) {
       setError("Şirket adı zorunludur.");
-      return false;
-    }
-    if (!formData.companyEmail.trim()) {
-      setError("Şirket email adresi zorunludur.");
       return false;
     }
     if (!formData.email.trim()) {
@@ -107,13 +94,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           company: {
             name: formData.companyName,
-            email: formData.companyEmail,
-            phone: formData.companyPhone || undefined,
-            address: formData.companyAddress || undefined,
-            city: formData.companyCity || undefined,
-            country: formData.companyCountry,
-            taxNumber: formData.companyTaxNumber || undefined,
-            taxOffice: formData.companyTaxOffice || undefined,
+            email: formData.email,
           },
           user: {
             name: formData.name,
@@ -276,7 +257,7 @@ export default function RegisterPage() {
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4 py-8">
-        <div className="glass-card p-8 w-full max-w-2xl rounded-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
+        <div className="glass-card p-8 w-full max-w-md rounded-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
           <div className="flex flex-col items-center mb-6">
             <div className="icon-container w-20 h-20 bg-gradient-to-r from-white/30 to-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm border border-white/20">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,11 +269,9 @@ export default function RegisterPage() {
           </div>
           
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Şirket Bilgileri */}
-            <div className="border-b border-white/20 pb-4 mb-4">
-              <h2 className="text-lg font-medium text-white mb-4">Şirket Bilgileri</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
+            <div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
                   <label htmlFor="companyName" className="block text-sm font-medium text-white mb-2">
                     Şirket Adı <span className="text-red-300">*</span>
                   </label>
@@ -311,147 +290,6 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
-                
-                <div>
-                  <label htmlFor="companyEmail" className="block text-sm font-medium text-white mb-2">
-                    Şirket Email <span className="text-red-300">*</span>
-                  </label>
-                  <input
-                    id="companyEmail"
-                    name="companyEmail"
-                    type="email"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyEmail' ? 'focused' : ''
-                    }`}
-                    value={formData.companyEmail}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyEmail')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="info@example.com"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="companyPhone" className="block text-sm font-medium text-white mb-2">
-                    Telefon
-                  </label>
-                  <input
-                    id="companyPhone"
-                    name="companyPhone"
-                    type="tel"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyPhone' ? 'focused' : ''
-                    }`}
-                    value={formData.companyPhone}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyPhone')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="+90 212 555 0123"
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label htmlFor="companyAddress" className="block text-sm font-medium text-white mb-2">
-                    Adres
-                  </label>
-                  <input
-                    id="companyAddress"
-                    name="companyAddress"
-                    type="text"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyAddress' ? 'focused' : ''
-                    }`}
-                    value={formData.companyAddress}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyAddress')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Şirket adresinizi girin"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="companyCity" className="block text-sm font-medium text-white mb-2">
-                    Şehir
-                  </label>
-                  <input
-                    id="companyCity"
-                    name="companyCity"
-                    type="text"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyCity' ? 'focused' : ''
-                    }`}
-                    value={formData.companyCity}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyCity')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="İstanbul"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="companyCountry" className="block text-sm font-medium text-white mb-2">
-                    Ülke
-                  </label>
-                  <input
-                    id="companyCountry"
-                    name="companyCountry"
-                    type="text"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyCountry' ? 'focused' : ''
-                    }`}
-                    value={formData.companyCountry}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyCountry')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Türkiye"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="companyTaxNumber" className="block text-sm font-medium text-white mb-2">
-                    Vergi Numarası
-                  </label>
-                  <input
-                    id="companyTaxNumber"
-                    name="companyTaxNumber"
-                    type="text"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyTaxNumber' ? 'focused' : ''
-                    }`}
-                    value={formData.companyTaxNumber}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyTaxNumber')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="1234567890"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="companyTaxOffice" className="block text-sm font-medium text-white mb-2">
-                    Vergi Dairesi
-                  </label>
-                  <input
-                    id="companyTaxOffice"
-                    name="companyTaxOffice"
-                    type="text"
-                    className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                      focusedField === 'companyTaxOffice' ? 'focused' : ''
-                    }`}
-                    value={formData.companyTaxOffice}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('companyTaxOffice')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="İstanbul Vergi Dairesi"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Kullanıcı Bilgileri */}
-            <div>
-              <h2 className="text-lg font-medium text-white mb-4">Kullanıcı Bilgileri</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
                     Ad Soyad <span className="text-red-300">*</span>

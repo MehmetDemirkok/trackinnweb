@@ -1423,13 +1423,7 @@ export default function AccommodationTableSection({
             value={filterTitle}
             onChange={(e) => setFilterTitle(e.target.value)}
           />
-          <input
-            type="text"
-            placeholder="Organizasyon Ara..."
-            className="px-3 py-2 border rounded-md text-sm"
-            value={filterOrg}
-            onChange={(e) => setFilterOrg(e.target.value)}
-          />
+
 
           {/* Gelişmiş Filtreler */}
           <AdvancedFilters
