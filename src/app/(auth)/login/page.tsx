@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 function LoginForm() {
   const [username, setUsername] = useState("");
@@ -10,39 +11,23 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check for registration success message
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
       setSuccessMessage('Kayıt başarıyla oluşturuldu! Lütfen giriş yapın.');
-      // Clear the message after 5 seconds
       setTimeout(() => {
         setSuccessMessage("");
       }, 5000);
     }
   }, [searchParams]);
-
-  // Floating particles effect
-  useEffect(() => {
-    const createParticle = () => {
-      const particle = document.createElement('div');
-      particle.className = 'floating-particle';
-      particle.style.left = Math.random() * 100 + '%';
-      particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-      particle.style.animationDelay = Math.random() * 2 + 's';
-      document.querySelector('.particles-container')?.appendChild(particle);
-      
-      setTimeout(() => {
-        particle.remove();
-      }, 5000);
-    };
-
-    const interval = setInterval(createParticle, 300);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,290 +74,623 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 animate-gradient">
-      {/* Animated background shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-      </div>
-      {/* Floating particles */}
-      <div className="particles-container absolute inset-0 pointer-events-none">
-        <style jsx>{`
-          .floating-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            animation: float-up 5s linear infinite;
-            pointer-events: none;
-          }
-          
-          @keyframes float-up {
-            0% {
-              transform: translateY(100vh) scale(0);
-              opacity: 0;
-            }
-            10% {
-              opacity: 1;
-            }
-            90% {
-              opacity: 1;
-            }
-            100% {
-              transform: translateY(-100px) scale(1);
-              opacity: 0;
-            }
-          }
-          
-          .animate-gradient {
-            background-size: 400% 400%;
-            animation: gradient-shift 8s ease infinite;
-          }
-          
-          @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          
-          .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
-          }
-          
-          .input-field {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-          }
-          
-          .input-field:focus {
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.15);
-          }
-          
-          .input-field.focused {
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.15);
-          }
-          
-          .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-            transition: color 0.3s ease;
-          }
-          
-          .input-field:focus::placeholder {
-            color: rgba(255, 255, 255, 0.8);
-          }
-          
-          .login-button {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-          }
-          
-          .login-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
-          }
-          
-          .login-button:active {
-            transform: translateY(-1px);
-          }
-          
-          .icon-container {
-            animation: icon-float 3s ease-in-out infinite;
-          }
-          
-          @keyframes icon-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-          }
-          
-          .title-glow {
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-          }
-          
-          .password-toggle {
-            transition: all 0.3s ease;
-          }
-          
-          .password-toggle:hover {
-            transform: scale(1.1);
-          }
-          
-          .password-toggle:active {
-            transform: scale(0.95);
-          }
-        `}</style>
-      </div>
+    <>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-      {/* Main content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="glass-card p-8 w-full max-w-md rounded-2xl animate-scale-in">
-          <div className="flex flex-col items-center mb-8">
-            <div className="icon-container w-20 h-20 bg-gradient-to-r from-white/30 to-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm border border-white/20">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" />
+        .login-page {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          font-family: 'Inter', sans-serif;
+          background: #0a0e1a;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* Subtle mesh gradient background */
+        .login-page::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: 
+            radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+          animation: meshMove 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes meshMove {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          100% { transform: translate(-2%, -1%) rotate(2deg); }
+        }
+
+        /* Floating orbs – very subtle */
+        .login-orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0;
+          animation: orbFade 1.5s ease-out forwards;
+        }
+
+        .login-orb-1 {
+          width: 300px;
+          height: 300px;
+          background: rgba(59, 130, 246, 0.12);
+          top: 10%;
+          right: 15%;
+          animation-delay: 0.2s;
+        }
+
+        .login-orb-2 {
+          width: 250px;
+          height: 250px;
+          background: rgba(139, 92, 246, 0.1);
+          bottom: 15%;
+          left: 10%;
+          animation-delay: 0.5s;
+        }
+
+        .login-orb-3 {
+          width: 200px;
+          height: 200px;
+          background: rgba(6, 182, 212, 0.08);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          animation-delay: 0.8s;
+        }
+
+        @keyframes orbFade {
+          to { opacity: 1; }
+        }
+
+        /* Grid pattern overlay */
+        .login-grid {
+          position: absolute;
+          inset: 0;
+          background-image: 
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
+
+        /* Main card */
+        .login-card {
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: 420px;
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 24px;
+          padding: 2.5rem;
+          opacity: 0;
+          transform: translateY(20px);
+          animation: cardEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+        }
+
+        @keyframes cardEnter {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Logo area */
+        .login-logo-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 2rem;
+        }
+
+        .login-logo-icon {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .login-logo-icon::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3));
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          border-radius: inherit;
+        }
+
+        .login-logo-icon:hover::after {
+          opacity: 1;
+        }
+
+        .login-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #f1f5f9;
+          letter-spacing: -0.02em;
+          margin: 0 0 0.25rem 0;
+        }
+
+        .login-subtitle {
+          font-size: 0.875rem;
+          color: rgba(148, 163, 184, 0.8);
+          margin: 0;
+          font-weight: 400;
+        }
+
+        /* Form */
+        .login-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+
+        /* Input group with floating label */
+        .login-input-group {
+          position: relative;
+        }
+
+        .login-label {
+          display: block;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          color: rgba(203, 213, 225, 0.7);
+          margin-bottom: 0.5rem;
+          transition: color 0.3s ease;
+        }
+
+        .login-input-wrap {
+          position: relative;
+        }
+
+        .login-input-icon {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: rgba(148, 163, 184, 0.5);
+          transition: color 0.3s ease;
+          pointer-events: none;
+          display: flex;
+          align-items: center;
+        }
+
+        .login-input {
+          width: 100%;
+          padding: 0.8rem 1rem 0.8rem 2.75rem;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1.5px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          color: #f1f5f9;
+          font-size: 0.9rem;
+          font-family: 'Inter', sans-serif;
+          outline: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .login-input::placeholder {
+          color: rgba(148, 163, 184, 0.4);
+        }
+
+        .login-input:focus {
+          border-color: rgba(59, 130, 246, 0.5);
+          background: rgba(255, 255, 255, 0.06);
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-input:focus + .login-input-focus-line,
+        .login-input:focus ~ .login-input-icon {
+          color: rgba(59, 130, 246, 0.8);
+        }
+
+        .login-input-group:focus-within .login-label {
+          color: rgba(59, 130, 246, 0.8);
+        }
+
+        .login-input-group:focus-within .login-input-icon {
+          color: rgba(59, 130, 246, 0.8);
+        }
+
+        /* Password toggle */
+        .login-pw-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: rgba(148, 163, 184, 0.5);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .login-pw-toggle:hover {
+          color: rgba(203, 213, 225, 0.9);
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Submit button */
+        .login-btn {
+          width: 100%;
+          padding: 0.85rem 1.5rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          font-family: 'Inter', sans-serif;
+          cursor: pointer;
+          color: white;
+          background: linear-gradient(135deg, #3b82f6, #6366f1);
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          margin-top: 0.5rem;
+        }
+
+        .login-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, #2563eb, #4f46e5);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .login-btn:hover::before {
+          opacity: 1;
+        }
+
+        .login-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .login-btn:active {
+          transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .login-btn:disabled:hover {
+          box-shadow: none;
+          transform: none;
+        }
+
+        .login-btn:disabled::before {
+          display: none;
+        }
+
+        .login-btn-content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+
+        /* Spinner */
+        .login-spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* Messages */
+        .login-msg {
+          padding: 0.75rem 1rem;
+          border-radius: 10px;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          animation: msgSlide 0.3s ease-out;
+        }
+
+        @keyframes msgSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-msg-success {
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          color: #6ee7b7;
+        }
+
+        .login-msg-error {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          color: #fca5a5;
+        }
+
+        /* Footer link */
+        .login-footer {
+          text-align: center;
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .login-footer p {
+          font-size: 0.8125rem;
+          color: rgba(148, 163, 184, 0.6);
+          margin: 0;
+        }
+
+        .login-footer a {
+          color: #60a5fa;
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.2s ease;
+        }
+
+        .login-footer a:hover {
+          color: #93bbfc;
+        }
+
+        /* Divider with text */
+        .login-divider {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin: 0.25rem 0;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .login-divider span {
+          font-size: 0.75rem;
+          color: rgba(148, 163, 184, 0.4);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            margin: 0.5rem;
+          }
+
+          .login-title {
+            font-size: 1.3rem;
+          }
+        }
+
+        /* Stagger animation for form fields */
+        .login-stagger-1 { opacity: 0; animation: staggerIn 0.5s ease-out 0.5s forwards; }
+        .login-stagger-2 { opacity: 0; animation: staggerIn 0.5s ease-out 0.6s forwards; }
+        .login-stagger-3 { opacity: 0; animation: staggerIn 0.5s ease-out 0.7s forwards; }
+        .login-stagger-4 { opacity: 0; animation: staggerIn 0.5s ease-out 0.8s forwards; }
+        .login-stagger-5 { opacity: 0; animation: staggerIn 0.5s ease-out 0.9s forwards; }
+
+        @keyframes staggerIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+      <div className="login-page">
+        {/* Background elements */}
+        <div className="login-grid" />
+        <div className="login-orb login-orb-1" />
+        <div className="login-orb login-orb-2" />
+        <div className="login-orb login-orb-3" />
+
+        {/* Card */}
+        <div className="login-card">
+          {/* Logo & Title */}
+          <div className="login-logo-wrap login-stagger-1">
+            <div className="login-logo-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#loginGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                  <linearGradient id="loginGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                  </linearGradient>
+                </defs>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
             </div>
-            <h1 className="text-3xl font-medium text-white mb-2 title-glow">TrackINN APP</h1>
-            <p className="text-white text-sm">Güvenli giriş yapın</p>
+            <h1 className="login-title">TrackINN</h1>
+            <p className="login-subtitle">Konaklama Yönetim Sistemi</p>
           </div>
-          
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="login-form">
+            {/* Username */}
+            <div className="login-input-group login-stagger-2">
+              <label htmlFor="username" className="login-label">
                 Kullanıcı Adı
               </label>
-              <div className="relative">
+              <div className="login-input-wrap">
                 <input
                   id="username"
                   type="text"
-                  className={`input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                    focusedField === 'username' ? 'focused' : ''
-                  }`}
+                  className="login-input"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  onFocus={() => setFocusedField('username')}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="Kullanıcı adınızı girin"
+                  placeholder="E-posta adresinizi girin"
                   autoFocus
                   autoComplete="username"
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+                <span className="login-input-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+
+            {/* Password */}
+            <div className="login-input-group login-stagger-3">
+              <label htmlFor="password" className="login-label">
                 Şifre
               </label>
-              <div className="relative">
+              <div className="login-input-wrap">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className={`input-field w-full px-4 py-3 pr-12 rounded-xl text-white placeholder-white/60 focus:outline-none transition-all duration-300 ${
-                    focusedField === 'password' ? 'focused' : ''
-                  }`}
+                  className="login-input"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
                   placeholder="Şifrenizi girin"
                   autoComplete="current-password"
+                  style={{ paddingRight: '2.75rem' }}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none"></div>
-                
-                {/* Şifre görünürlük kontrolü */}
+                <span className="login-input-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="password-toggle absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-white/60 hover:text-white/90 hover:bg-white/10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20"
+                  className="login-pw-toggle"
                   aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
                   title={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
                 >
                   {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
               </div>
             </div>
-            
+
+            {/* Messages */}
             {successMessage && (
-              <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-3 text-green-200 text-sm font-medium animate-fade-in backdrop-blur-sm">
+              <div className="login-msg login-msg-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
                 {successMessage}
               </div>
             )}
-            
+
             {error && (
-              <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 text-red-200 text-sm font-medium animate-fade-in backdrop-blur-sm">
+              <div className="login-msg login-msg-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
                 {error}
               </div>
             )}
-            
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className={`login-button w-full py-3 rounded-xl text-white font-medium text-lg transition-all duration-300 relative overflow-hidden ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
-              onClick={(e) => {
-                if (!isLoading) {
-                  const button = e.currentTarget;
-                  const ripple = document.createElement('span');
-                  const rect = button.getBoundingClientRect();
-                  const size = Math.max(rect.width, rect.height);
-                  const x = e.clientX - rect.left - size / 2;
-                  const y = e.clientY - rect.top - size / 2;
-                  
-                  ripple.style.width = ripple.style.height = size + 'px';
-                  ripple.style.left = x + 'px';
-                  ripple.style.top = y + 'px';
-                  ripple.className = 'absolute bg-white/20 rounded-full animate-ripple';
-                  
-                  button.appendChild(ripple);
-                  
-                  setTimeout(() => {
-                    ripple.remove();
-                  }, 600);
-                }
-              }}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Giriş yapılıyor...</span>
-                </div>
-              ) : (
-                'Giriş Yap'
-              )}
-            </button>
 
-            <div className="text-center mt-4">
-              <p className="text-white text-sm">
+            {/* Submit */}
+            <div className="login-stagger-4">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="login-btn"
+              >
+                <span className="login-btn-content">
+                  {isLoading ? (
+                    <>
+                      <div className="login-spinner" />
+                      <span>Giriş yapılıyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Giriş Yap</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </>
+                  )}
+                </span>
+              </button>
+            </div>
+
+            {/* Footer */}
+            <div className="login-footer login-stagger-5">
+              <p>
                 Hesabınız yok mu?{" "}
-                <Link href="/register" className="text-white font-medium hover:text-white/80 underline transition-colors">
+                <Link href="/register">
                   Kayıt olun
                 </Link>
               </p>
             </div>
           </form>
-          
-          {/* Decorative elements */}
-          <div className="mt-6 flex justify-center space-x-4">
-            <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 animate-gradient flex items-center justify-center">
-        <div className="text-white text-lg">Yükleniyor...</div>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0a0e1a',
+        color: 'rgba(241,245,249,0.6)',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '0.9rem',
+      }}>
+        Yükleniyor...
       </div>
     }>
       <LoginForm />
