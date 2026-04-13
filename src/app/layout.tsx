@@ -4,6 +4,7 @@ import "./globals.css";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "next-themes";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,7 @@ export default function RootLayout({
               },
             }}
           />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
